@@ -11,5 +11,3 @@
 ## ignore pyc files
 *.pyc
 
-## ignore output data
-data/output/*
