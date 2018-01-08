@@ -1,0 +1,15 @@
+## this file is used by Git to clarify which files should be ignored in the commit.
+## when a new directory is created
+**/.DS_Store
+
+## and ignore any API credentials stored in python
+*tokens.py
+
+## ignore ipynb files
+*.ipynb*
+
+## ignore pyc files
+*.pyc
+
+## ignore output data
+data/output/*
