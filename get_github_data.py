@@ -2,7 +2,7 @@ from initialize_data import *
 from access_tokens import *
 from datetime import datetime
 
-######################## Get data from GitHub API ########################
+##### Get data from GitHub API 
 base = 'https://api.github.com/repos/'
 commits = '/stats/commit_activity'
 token = "access_token=" + github_access_token
@@ -29,6 +29,8 @@ def get_star_pages(url):
 		all_results = all_results.append(d, ignore_index=True)
     
 	return all_results 
+
+#####
 
 # stars by day for each repo
 all_stars = pd.DataFrame([])
@@ -60,21 +62,33 @@ github_commits_by_week_final = pd.DataFrame(github_commits_by_week.groupby(['pro
 github_commits_by_week_final.to_csv("data/output/github_commits.csv",index=False)
 
 
-# # total commits in the past year, total stars, total forks
-github_data_total = pd.DataFrame([])
+# total commits in the past year, total stars, total forks, earliest creation date
+github_data_total_sum = pd.DataFrame([])
+github_data_total_dt = pd.DataFrame([])
 
 for index, row in protocols.iterrows():
 
 	for repo in row['github_repos']:
 		if repo != 'None':
 			repoItems = get_json(base+repo+'?'+token) 
-			repo_data_total = pd.DataFrame({
+			repo_data_total_sum = pd.DataFrame({
 								'total_stars_count' : repoItems['stargazers_count'],
 								'total_forks_count' : repoItems['forks_count'],
 								'total_commits_past year': github_commits_by_week_final[github_commits_by_week_final.protocol==row['protocol']]['total'].sum()
 								}, index=[0])
-			repo_data_total['protocol'] = row['protocol']
-			github_data_total = github_data_total.append(repo_data_total, ignore_index=True)
+			repo_data_total_sum['protocol'] = row['protocol']
+			github_data_total_sum = github_data_total_sum.append(repo_data_total_sum, ignore_index=True)
 
-github_data_total_final = pd.DataFrame(github_data_total.groupby(['protocol']).sum()).reset_index()
+			repo_data_total_dt = pd.DataFrame({
+								'created_at' : repoItems['created_at']
+								}, index=[0])
+			repo_data_total_dt['protocol'] = row['protocol']
+			github_data_total_dt = github_data_total_dt.append(repo_data_total_dt, ignore_index=True)
+
+github_data_total_dt['created_at'] = pd.to_datetime(github_data_total_dt['created_at'],infer_datetime_format=True).dt.date
+github_data_total_dt = pd.DataFrame(github_data_total_dt.groupby(['protocol']).min()).reset_index()
+
+github_data_total_final = pd.DataFrame(github_data_total_sum.groupby(['protocol']).sum()).reset_index()
+github_data_total_final = github_data_total_final.merge(github_data_total_dt, on='protocol')
+
 github_data_total_final.to_csv("data/output/github_data_total.csv",index=False)
