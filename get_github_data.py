@@ -8,7 +8,7 @@ commits = '/stats/commit_activity'
 token = "access_token=" + github_access_token
 
 # Function to get all stars by day, using Pagination
-def get_star_pages(url):
+def get_star_pages(url,max_dt):
 	all_results = pd.DataFrame([])
 	r = requests.get(url + "/stargazers?page=1&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
 	if 'Link' in r.headers:
@@ -16,35 +16,39 @@ def get_star_pages(url):
 	else:
 		last = 1
 
-	d = pd.DataFrame(json.loads(r.content))
-	all_results = all_results.append(d, ignore_index=True)
+	# get minimum date on last page
+	r = requests.get(url + "/stargazers?page=" + str(last) + "&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
+	results = json.loads(r.content)
+	if len(results) > 1:
+		d = pd.DataFrame(results)
+	if len(results) == 1:
+		d = pd.DataFrame(results, index = [0])
+	
+	# if still >= max_dt, go back a page
+	min_last = pd.to_datetime(d['starred_at'].min(),infer_datetime_format=True)
+	print(min_last)
+	pg = int(last)
 
-	for i in range(1, int(last)+1):
-		r = requests.get(url + "/stargazers?page=" + str(i) + "&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
+	while min_last >= max_dt:
+		r = requests.get(url + "/stargazers?page=" + str(pg) + "&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
 		results = json.loads(r.content)
+		
 		if len(results) > 1:
 			d = pd.DataFrame(results)
-		if len(results) == 1:
+			all_results = all_results.append(d, ignore_index=True)
+		elif len(results) == 1:
 			d = pd.DataFrame(results, index = [0])
-		all_results = all_results.append(d, ignore_index=True)
+			all_results = all_results.append(d, ignore_index=True)
+		else:
+			break
+		min_last = pd.to_datetime(d['starred_at'].min(),infer_datetime_format=True)
+		pg -= 1
     
 	return all_results 
 
-#####
-
 # stars by day for each repo
-all_stars = pd.DataFrame([])
-
-for index, row in protocols.iterrows():
-	for repo in row['github_repos']:
-		if repo != 'None':
-			repo_stars = get_star_pages(base + repo)
-			repo_stars['protocol'] = row['protocol']
-			all_stars = all_stars.append(repo_stars, ignore_index=True)
-
-all_stars['starred_at_date'] = pd.to_datetime(all_stars['starred_at'],infer_datetime_format=True).dt.date
-all_stars_final = pd.DataFrame({'count' : all_stars.groupby(['protocol','starred_at_date']).size()}).reset_index()
-all_stars_final.to_csv("data/output/github_stars.csv",index=False)
+github_stars = pd.read_csv("data/output/github_stars.csv")
+api_wrapper_append(github_stars,get_star_pages,'GitHub',base,"",'starred_at','count',False,True,'github_stars')
 
 # commits by week
 github_commits_by_week = pd.DataFrame([])
@@ -52,7 +56,7 @@ github_commits_by_week = pd.DataFrame([])
 for index, row in protocols.iterrows():
 	for repo in row['github_repos']:
 		if repo != 'None':
-			commits_by_week = get_json(base+repo+commits+'?'+token)
+			commits_by_week = get_json(base+repo+commits+'?'+token,wjson=False)
 			repo_github_commits_by_week = pd.DataFrame(commits_by_week)
 			repo_github_commits_by_week['protocol'] = row['protocol']
 			github_commits_by_week = github_commits_by_week.append(repo_github_commits_by_week, ignore_index=True)
@@ -60,7 +64,7 @@ for index, row in protocols.iterrows():
 github_commits_by_week['week_date'] = pd.to_datetime(github_commits_by_week['week'],unit='s')
 github_commits_by_week_final = pd.DataFrame(github_commits_by_week.groupby(['protocol','week_date']).sum()).reset_index()
 github_commits_by_week_final.to_csv("data/output/github_commits.csv",index=False)
-
+print("commits by week done")
 
 # total commits in the past year, total stars, total forks, earliest creation date
 github_data_total_sum = pd.DataFrame([])
@@ -70,7 +74,7 @@ for index, row in protocols.iterrows():
 
 	for repo in row['github_repos']:
 		if repo != 'None':
-			repoItems = get_json(base+repo+'?'+token) 
+			repoItems = get_json(base+repo+'?'+token,wjson=False) 
 			repo_data_total_sum = pd.DataFrame({
 								'total_stars_count' : repoItems['stargazers_count'],
 								'total_forks_count' : repoItems['forks_count'],
@@ -92,3 +96,4 @@ github_data_total_final = pd.DataFrame(github_data_total_sum.groupby(['protocol'
 github_data_total_final = github_data_total_final.merge(github_data_total_dt, on='protocol')
 
 github_data_total_final.to_csv("data/output/github_data_total.csv",index=False)
+print("done")
