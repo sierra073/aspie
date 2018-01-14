@@ -4,7 +4,7 @@ Ethereum,ETH,[ethereum/go-ethereum],[Ethereum]
 Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO]
 Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks]
 Dfinity,,[dfinity/go-revolver],[dfinity]
-Filecoin,FIL,[ipfs/ipfs],"[rpfs, filecoin]"
+Filecoin,FIL,[ipfs/ipfs],"[ipfs, filecoin]"
 Monero,XMR,[monero-project/monero],[Monero]
 Urbit,,[urbit/urbit],[urbit]
 Raiden,RDN,[raiden-network/raiden],[raidennetwork]
