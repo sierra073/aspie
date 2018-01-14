@@ -1,4 +1,5 @@
 ﻿protocol,ticker_symbol,github_repos,subreddits
+Bitcoin,BTC,[bitcoin/bitcoin],[Bitcoin]
 Ethereum,ETH,[ethereum/go-ethereum],[Ethereum]
 Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO]
 Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks]
