@@ -8,19 +8,23 @@ from datetime import datetime
 def get_stackoverflow_questions(search_title,max_dt):
 	SITE = StackAPI('stackoverflow',key=stackoverflow_key)
 	questions = pd.DataFrame([])
+	results_title = pd.DataFrame([])
+	results_tag = pd.DataFrame([])
+	tagged = pd.DataFrame([])
 	print(search_title)
+	if str(max_dt) != 'NaT':
 	# title search
-	results_title = SITE.fetch('search', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', intitle=search_title)
-	results_title = pd.DataFrame(results_title['items'])
+		results_title = SITE.fetch('search', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', intitle=search_title)
+		results_title = pd.DataFrame(results_title['items'])
 	if not results_title.empty:
 		questions['date'] = pd.to_datetime(results_title['creation_date'],unit='s').dt.date
 		questions['question_id'] = results_title['question_id']
 		questions['view_count'] = results_title['view_count']
 	# tag search
-	results_tag = SITE.fetch('questions', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', tagged=search_title)
-	results_tag = pd.DataFrame(results_tag['items'])
+	if str(max_dt) != 'NaT':
+		results_tag = SITE.fetch('questions', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', tagged=search_title)
+		results_tag = pd.DataFrame(results_tag['items'])
 	if not results_tag.empty:
-		tagged = pd.DataFrame([])
 		tagged['date'] = pd.to_datetime(results_tag['creation_date'],unit='s').dt.date
 		tagged['question_id'] = results_tag['question_id']
 		tagged['view_count'] = results_tag['view_count']

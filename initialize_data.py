@@ -37,7 +37,7 @@ protocols = pd.read_csv("https://raw.githubusercontent.com/sierra073/aspie/maste
 protocols['github_repos'] = protocols['github_repos'].apply(lambda x: stringToList(x))
 protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x))
 protocols['stackoverflow'] = protocols['stackoverflow'].apply(lambda x: stringToList(x))
-protocols['search'] = protocols['search'].apply(lambda x: stringToList(x))
+#protocols['search'] = protocols['search'].apply(lambda x: stringToList(x))
 
 ### wrapper function around whatever API calls are used to get a certain metric if we are appending it to current data
 def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum,allow_multiple_days,csv_output_name):
@@ -56,9 +56,10 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
         for item in items:
             if item != 'None':
                 max_dt = pd.to_datetime(data_sub[date_col]).max()
-                count_by_day = api_func(u_srt + item + u_end,max_dt)
-                count_by_day['protocol'] = row['protocol']
-                counts_by_day = counts_by_day.append(count_by_day)
+                if str(max_dt) != 'NaT':
+                    count_by_day = api_func(u_srt + item + u_end,max_dt)
+                    count_by_day['protocol'] = row['protocol']
+                    counts_by_day = counts_by_day.append(count_by_day)
 
     if not counts_by_day.empty:
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col],infer_datetime_format=True).dt.date
@@ -88,20 +89,21 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
                 csv_data = csv_data[csv_data.date_rank > 1]
                 csv_data = csv_data.drop(['date_rank'],axis=1)
                 csv_data = csv_data.reset_index(drop=True)
-        # append new data and reformat. be overly certain to remove index column
+        # append new data and reformat. be overly certain to remove index column and drop any duplicates
         counts_by_day = csv_data.append(counts_by_day,ignore_index=True)
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col])
         counts_by_day = counts_by_day.reset_index()
         counts_by_day = counts_by_day.dropna()
         counts_by_day = counts_by_day.reset_index(drop=True)
+        counts_by_day = counts_by_day.drop_duplicates()
         if site=='StackOverflow':
             counts_by_day = counts_by_day.drop(['index'],axis=1)
+            counts_by_day = counts_by_day.drop_duplicates()
 
         result_protocols = pd.DataFrame(counts_by_day.groupby('protocol').size()).reset_index()
         # ensure each protocol is listed
-        counts_by_day2=counts_by_day
-        print(result_protocols['protocol'])
         for index, row in protocols.iterrows():
-            if row['protocol'] not in result_protocols['protocol']:
-                print(row['protocol'])
-        #counts_by_day.to_csv("data/output/" + csv_output_name + ".csv",index=False)
+            if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
+                counts_by_day = counts_by_day.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
+
+        counts_by_day.to_csv("data/output/" + csv_output_name + ".csv",index=False)
