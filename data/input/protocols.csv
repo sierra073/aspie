@@ -1,7 +1,7 @@
 ﻿protocol,	ticker_symbol,	github_repos,	subreddits,	stackoverflow,	search
 Bitcoin,	BTC,	[bitcoin/bitcoin],	[Bitcoin],	[bitcoin],	[bitcoin]
 Ethereum,	ETH,	[ethereum/go-ethereum],	[Ethereum],	[ethereum],	[ethereum]
-Maker	MKR,	"[makerdao/sai, makerdao/pymaker]",	[MakerDAO],	"[dai, makerdao, mkr, dai integration]",	"[dai, makerdao, mkr, dai integration]"
+Maker,	MKR,	"[makerdao/sai, makerdao/pymaker]",	[MakerDAO],	"[dai, makerdao, mkr, dai integration]",	"[dai, makerdao, mkr, dai integration]"
 Raiblocks,	XRB,	[clemahieu/raiblocks],	[RaiBlocks],	[raiblocks],	[raiblocks]
 Dfinity,	,	[dfinity/go-revolver],	[dfinity],	[dfinity],	[dfinity]
 Filecoin,	FIL,	[ipfs/ipfs],	"[ipfs, filecoin]",	"[ipfs, filecoin]",	"[ipfs, filecoin]"
