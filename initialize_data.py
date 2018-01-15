@@ -36,8 +36,9 @@ protocols = pd.read_csv("https://raw.githubusercontent.com/sierra073/aspie/maste
 
 protocols['github_repos'] = protocols['github_repos'].apply(lambda x: stringToList(x))
 protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x))
+protocols['stackoverflow'] = protocols['stackoverflow'].apply(lambda x: stringToList(x))
 
-### wrapper function around whatever API calls are used to get a certain metric from GitHub or Reddit if we are appending it to current data
+### wrapper function around whatever API calls are used to get a certain metric if we are appending it to current data
 def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum,allow_multiple_days,csv_output_name):
     counts_by_day = pd.DataFrame([])
 
@@ -46,15 +47,16 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
 
         if site=='GitHub':
             items = row['github_repos']
-        else:
+        elif site=='Reddit':
             items = row['subreddits']
+        elif site=='StackOverflow':
+            items = row['stackoverflow']
 
         for item in items:
             if item != 'None':
                 max_dt = pd.to_datetime(data_sub[date_col]).max()
                 count_by_day = api_func(u_srt + item + u_end,max_dt)
                 count_by_day['protocol'] = row['protocol']
-
                 counts_by_day = counts_by_day.append(count_by_day)
 
     if not counts_by_day.empty:
@@ -63,7 +65,15 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
             counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).sum()).reset_index()
         else:
             counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).size()).reset_index()
-        counts_by_day.columns = ['protocol', date_col, count_col]
+
+        if len(count_col) > 1:
+            li = [['protocol'], [date_col], count_col]
+            chained = []
+            while li:
+                chained.extend(li.pop(0))
+            counts_by_day.columns = chained
+        else:
+            counts_by_day.columns = ['protocol', date_col, count_col]
 
         # sort current data and remove latest date
         if allow_multiple_days==True:
@@ -80,5 +90,9 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
         # append new data and reformat
         counts_by_day = csv_data.append(counts_by_day,ignore_index=True)
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col])
+        counts_by_day = counts_by_day.reset_index()
+        counts_by_day = counts_by_day.dropna()
         counts_by_day = counts_by_day.reset_index(drop=True)
+        if site=='StackOverflow':
+            counts_by_day = counts_by_day.drop(['index'],axis=1)
         counts_by_day.to_csv("data/output/" + csv_output_name + ".csv",index=False)

@@ -54,7 +54,7 @@ def get_subreddit(u,max_dt):
 	return(subreddit_dts)
 
 # Get reddit posts by day for all protocols (starts 1/12/18)
-api_wrapper_append(reddit_posts,get_subreddit,'Reddit',"https://reddit.com/r/","/new",'posted_date','post_id'.True,True,'reddit_posts')
+api_wrapper_append(reddit_posts,get_subreddit,'Reddit',"https://reddit.com/r/","/new",'posted_date','post_id',True,True,'reddit_posts')
 print("subreddit posts done")
 
 ## Subscribers by day (starts 1/14/18)
