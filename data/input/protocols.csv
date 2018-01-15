@@ -1,17 +1,17 @@
-﻿protocol,ticker_symbol,github_repos,subreddits
-Bitcoin,BTC,[bitcoin/bitcoin],[Bitcoin]
-Ethereum,ETH,[ethereum/go-ethereum],[Ethereum]
-Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO]
-Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks]
-Dfinity,,[dfinity/go-revolver],[dfinity]
-Filecoin,FIL,[ipfs/ipfs],"[ipfs, filecoin]"
-Monero,XMR,[monero-project/monero],[Monero]
-Urbit,,[urbit/urbit],[urbit]
-Raiden,RDN,[raiden-network/raiden],[raidennetwork]
-Tezos,,[tezos/tezos],[tezos]
-Tether,,[None],[Tether]
-Sia,,[NebulousLabs/Sia],[siacoin]
-Storj,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj]
-MaidSafe,,[maidsafe/crust],[maidsafe]
-Bitcoin Cash,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash]
-Plasma,,[None],[None]
+﻿protocol,ticker_symbol,github_repos,subreddits,stackoverflow
+Bitcoin,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin]
+Ethereum,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum]
+Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]"
+Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks],[raiblocks]
+Dfinity,,[dfinity/go-revolver],[dfinity],[dfinity]
+Filecoin,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]"
+Monero,XMR,[monero-project/monero],[Monero],[monero]
+Urbit,,[urbit/urbit],[urbit],[urbit]
+Raiden,RDN,[raiden-network/raiden],[raidennetwork],[raiden]
+Tezos,,[tezos/tezos],[tezos],[tezos]
+Tether,,[None],[Tether],[tether]
+Sia,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]"
+Storj,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj]
+MaidSafe,,[maidsafe/crust],[maidsafe],[maidsafe]
+Bitcoin Cash,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]"
+Plasma,,[None],[None],[None]
