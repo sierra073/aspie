@@ -26,7 +26,6 @@ def get_star_pages(url,max_dt):
 	
 	# if still >= max_dt, go back a page
 	min_last = pd.to_datetime(d['starred_at'].min(),infer_datetime_format=True)
-	print(min_last)
 	pg = int(last)
 
 	while min_last >= max_dt:
@@ -48,7 +47,8 @@ def get_star_pages(url,max_dt):
 
 # stars by day for each repo
 github_stars = pd.read_csv("data/output/github_stars.csv")
-api_wrapper_append(github_stars,get_star_pages,'GitHub',base,"",'starred_at','count',False,True,'github_stars')
+api_wrapper_append(github_stars,get_star_pages,'GitHub',base,"",'starred_at',['count'],False,True,'github_stars')
+print("stars done")
 
 # commits by week
 github_commits_by_week = pd.DataFrame([])
@@ -63,6 +63,13 @@ for index, row in protocols.iterrows():
 
 github_commits_by_week['week_date'] = pd.to_datetime(github_commits_by_week['week'],unit='s')
 github_commits_by_week_final = pd.DataFrame(github_commits_by_week.groupby(['protocol','week_date']).sum()).reset_index()
+
+# ensure each protocol is listed
+result_protocols = pd.DataFrame(github_commits_by_week_final.groupby('protocol').size()).reset_index()
+for index, row in protocols.iterrows():
+	if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
+		github_commits_by_week_final = github_commits_by_week_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
+
 github_commits_by_week_final.to_csv("data/output/github_commits.csv",index=False)
 print("commits by week done")
 
@@ -78,7 +85,7 @@ for index, row in protocols.iterrows():
 			repo_data_total_sum = pd.DataFrame({
 								'total_stars_count' : repoItems['stargazers_count'],
 								'total_forks_count' : repoItems['forks_count'],
-								'total_commits_past year': github_commits_by_week_final[github_commits_by_week_final.protocol==row['protocol']]['total'].sum()
+								'total_commits_past_year': github_commits_by_week_final[github_commits_by_week_final.protocol==row['protocol']]['total'].sum()
 								}, index=[0])
 			repo_data_total_sum['protocol'] = row['protocol']
 			github_data_total_sum = github_data_total_sum.append(repo_data_total_sum, ignore_index=True)
@@ -94,6 +101,12 @@ github_data_total_dt = pd.DataFrame(github_data_total_dt.groupby(['protocol']).m
 
 github_data_total_final = pd.DataFrame(github_data_total_sum.groupby(['protocol']).sum()).reset_index()
 github_data_total_final = github_data_total_final.merge(github_data_total_dt, on='protocol')
+
+result_protocols = pd.DataFrame(github_data_total_final.groupby('protocol').size()).reset_index()
+for index, row in protocols.iterrows():
+	if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
+		github_data_total_final = github_data_total_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
+
 
 github_data_total_final.to_csv("data/output/github_data_total.csv",index=False)
 print("done")
