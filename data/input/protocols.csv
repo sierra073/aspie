@@ -1,1 +1,17 @@
-﻿protocol,ticker_symbol,github_repos,subreddits,stackoverflowBitcoin,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin]Ethereum,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum]Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]"Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks],[raiblocks]Dfinity,,[dfinity/go-revolver],[dfinity],[dfinity]Filecoin,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]"Monero,XMR,[monero-project/monero],[Monero],[monero]Urbit,,[urbit/urbit],[urbit],[urbit]Raiden,RDN,[raiden-network/raiden],[raidennetwork],[raiden]Tezos,,[tezos/tezos],[tezos],[tezos]Tether,,[None],[Tether],[tether]Sia,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]"Storj,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj]MaidSafe,,[maidsafe/crust],[maidsafe],[maidsafe]Bitcoin Cash,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]"Plasma,,[None],[None],[None]
+﻿protocol,ticker_symbol,github_repos,subreddits,stackoverflow,search
+Bitcoin,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[bitcoin]
+Ethereum,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereum]
+Maker,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]","[dai, makerdao, mkr, dai integration]"
+Raiblocks,XRB,[clemahieu/raiblocks],[RaiBlocks],[raiblocks],[raiblocks]
+Dfinity,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity]
+Filecoin,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]","[ipfs, filecoin]"
+Monero,XMR,[monero-project/monero],[Monero],[monero],[monero]
+Urbit,,[urbit/urbit],[urbit],[urbit],[urbit]
+Raiden,RDN,[raiden-network/raiden],[raidennetwork],[raiden],[raiden]
+Tezos,,[tezos/tezos],[tezos],[tezos],[tezos]
+Tether,,[None],[Tether],[tether],[tether]
+Sia,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]","[sia, siacoin]"
+Storj,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storj]
+MaidSafe,,[maidsafe/crust],[maidsafe],[maidsafe],[maidsafe]
+Bitcoin Cash,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]","[bitcoincash, bitcoin cash]"
+Plasma,,[None],[None],[None],"[plasma ethereum, plasma framework, plasma protocol]"
