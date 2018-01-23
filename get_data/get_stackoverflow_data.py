@@ -44,5 +44,5 @@ def get_stackoverflow_questions(search_title,max_dt):
 	return(questions_final)
 
 # questions by day for each search term (as tag and title), since Jan 2017
-stackoverflow_questions = pd.read_csv("data/output/stackoverflow_questions.csv")
+stackoverflow_questions = pd.read_csv("../data/output/stackoverflow_questions.csv")
 api_wrapper_append(stackoverflow_questions,get_stackoverflow_questions,'StackOverflow',"","",'date',['question_id','views'],True,True,'stackoverflow_questions')

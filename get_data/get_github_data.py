@@ -10,11 +10,13 @@ token = "access_token=" + github_access_token
 # Function to get all stars by day, using Pagination
 def get_star_pages(url,max_dt):
 	all_results = pd.DataFrame([])
+	print("Requesting " + url + "/stargazers?page=1&per_page=100&" + token)
 	r = requests.get(url + "/stargazers?page=1&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
 	if 'Link' in r.headers:
 		last = r.headers['Link'].split(',')[1].split("?page=")[1].split("&per_page")[0]
 	else:
 		last = 1
+	print("first request done")
 
 	# get minimum date on last page
 	r = requests.get(url + "/stargazers?page=" + str(last) + "&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
@@ -28,7 +30,7 @@ def get_star_pages(url,max_dt):
 	min_last = pd.to_datetime(d['starred_at'].min(),infer_datetime_format=True)
 	pg = int(last)
 
-	while min_last >= max_dt:
+	while min_last >= max_dt and pg > 0:
 		r = requests.get(url + "/stargazers?page=" + str(pg) + "&per_page=100&" + token, headers = {'Accept': 'application/vnd.github.v3.star+json'} )
 		results = json.loads(r.content)
 		
@@ -46,7 +48,7 @@ def get_star_pages(url,max_dt):
 	return all_results 
 
 # stars by day for each repo
-github_stars = pd.read_csv("data/output/github_stars.csv")
+github_stars = pd.read_csv("../data/output/github_stars.csv")
 api_wrapper_append(github_stars,get_star_pages,'GitHub',base,"",'starred_at',['count'],False,True,'github_stars')
 print("stars done")
 
@@ -70,7 +72,8 @@ for index, row in protocols.iterrows():
 	if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
 		github_commits_by_week_final = github_commits_by_week_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
 
-github_commits_by_week_final.to_csv("data/output/github_commits.csv",index=False)
+github_commits_by_week_final = github_commits_by_week_final.drop('week',axis=1)
+github_commits_by_week_final.to_csv("../data/output/github_commits.csv",index=False)
 print("commits by week done")
 
 # total commits in the past year, total stars, total forks, earliest creation date
@@ -108,5 +111,5 @@ for index, row in protocols.iterrows():
 		github_data_total_final = github_data_total_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
 
 
-github_data_total_final.to_csv("data/output/github_data_total.csv",index=False)
+github_data_total_final.to_csv("../data/output/github_data_total.csv",index=False)
 print("done")
