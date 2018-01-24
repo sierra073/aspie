@@ -12,6 +12,6 @@ Tezos,#9A0089,,[tezos/tezos],[tezos],[tezos],[tezos]
 Tether,#0099BC,,[None],[Tether],[tether],[tether]
 Sia,#0078D7,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]","[sia, siacoin]"
 Storj,#0063B1,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storj]
-MaidSafe,#00CC6A,,[maidsafe/crust],"[maidsafe,safenetwork]",[maidsafe],[maidsafe]
+MaidSafe,#00CC6A,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe]
 Bitcoin Cash,#FF8C00,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]","[bitcoincash, bitcoin cash]"
 Plasma,#69797E,,[None],[None],[None],"[plasma ethereum, plasma framework, plasma protocol]"
