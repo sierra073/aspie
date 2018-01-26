@@ -4,7 +4,7 @@ import pandas as pd
 
 ## Subreddit posts by day
 reddit_posts = pd.read_csv("../data/output/reddit_posts.csv")
-#reddit_posts = reddit_posts[reddit_posts.protocol != 'Bitcoin']
+reddit_posts = reddit_posts[reddit_posts.protocol != 'Bitcoin']
 
 def get_subreddit(u,max_dt):
 
@@ -30,20 +30,20 @@ def get_subreddit(u,max_dt):
 		if not subreddit_dt.empty:
 			subreddit_dts = subreddit_dts.append(subreddit_dt,ignore_index=True)
 
-	while (pd.to_datetime(dt,unit='s') >= max_dt and pd.to_datetime(dt,unit='s') <= stop_time):
+	while (pd.to_datetime(dt,unit='s') >= max_dt):
+
 		data = get_json("{}?after={}&count={}".format(u, after, count),wjson=True)
-		if data['kind'] == 't3':
 		#iterate our data set
-			for entry in data['data']['children']:
-				dt = int(entry['data']['created_utc'])
-				if (not entry['data']['id'] in used_id) and (pd.to_datetime(dt,unit='s') >= max_dt):
-				# add the id and date to our lists
-					used_id.add(entry['data']['id']) 
-					subreddit_dt = pd.DataFrame({'posted_date' : dt, 'post_id': entry['data']['id']}, index=[0])
-					subreddit_dt['posted_date'] = pd.to_datetime(subreddit_dt['posted_date'],unit='s').dt.date
-				
-				if not subreddit_dt.empty:
-					subreddit_dts = subreddit_dts.append(subreddit_dt,ignore_index=True)
+		for entry in data['data']['children']:
+			dt = int(entry['data']['created_utc'])
+			if (not entry['data']['id'] in used_id) and (pd.to_datetime(dt,unit='s') >= max_dt):
+			# add the id and date to our lists
+				used_id.add(entry['data']['id']) 
+				subreddit_dt = pd.DataFrame({'posted_date' : dt, 'post_id': entry['data']['id']}, index=[0])
+				subreddit_dt['posted_date'] = pd.to_datetime(subreddit_dt['posted_date'],unit='s').dt.date
+			
+			if not subreddit_dt.empty:
+				subreddit_dts = subreddit_dts.append(subreddit_dt,ignore_index=True)
 
 		after = data['data']['after'] # set our after variable
 		count+=25 # increment counter

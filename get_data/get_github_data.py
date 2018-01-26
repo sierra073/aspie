@@ -52,33 +52,25 @@ github_stars = pd.read_csv("../data/output/github_stars.csv")
 api_wrapper_append(github_stars,get_star_pages,'GitHub',base,"",'starred_at',['count'],False,True,'github_stars')
 print("stars done")
 
-# commits by week
-github_commits_by_week = pd.DataFrame([])
+# commits by week 
+github_commits = pd.read_csv("../data/output/github_commits.csv")
 
-for index, row in protocols.iterrows():
-	for repo in row['github_repos']:
-		if repo != 'None':
-			commits_by_week = get_json(base+repo+commits+'?'+token,wjson=False)
-			repo_github_commits_by_week = pd.DataFrame(commits_by_week)
-			repo_github_commits_by_week['protocol'] = row['protocol']
-			github_commits_by_week = github_commits_by_week.append(repo_github_commits_by_week, ignore_index=True)
+def get_commits(url, max_dt):
+	commits_by_week = get_json(url,wjson=False)
+	github_commits_by_week = pd.DataFrame(commits_by_week)
+	if not github_commits_by_week.empty:
+		github_commits_by_week['week_date'] = pd.to_datetime(github_commits_by_week['week'],unit='s')
+		github_commits_by_week = github_commits_by_week[github_commits_by_week.week_date >= max_dt]
+		github_commits_by_week = github_commits_by_week.drop('week',axis=1)
+	return github_commits_by_week
 
-github_commits_by_week['week_date'] = pd.to_datetime(github_commits_by_week['week'],unit='s')
-github_commits_by_week_final = pd.DataFrame(github_commits_by_week.groupby(['protocol','week_date']).sum()).reset_index()
-
-# ensure each protocol is listed
-result_protocols = pd.DataFrame(github_commits_by_week_final.groupby('protocol').size()).reset_index()
-for index, row in protocols.iterrows():
-	if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
-		github_commits_by_week_final = github_commits_by_week_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
-
-github_commits_by_week_final = github_commits_by_week_final.drop('week',axis=1)
-github_commits_by_week_final.to_csv("../data/output/github_commits.csv",index=False)
+api_wrapper_append(github_commits,get_commits,'GitHub',base,commits+'?'+token,'week_date',['total'],True,True,'github_commits')
 print("commits by week done")
 
 # total commits in the past year, total stars, total forks, earliest creation date
 github_data_total_sum = pd.DataFrame([])
 github_data_total_dt = pd.DataFrame([])
+github_commits = pd.read_csv("../data/output/github_commits.csv")
 
 for index, row in protocols.iterrows():
 
@@ -88,7 +80,7 @@ for index, row in protocols.iterrows():
 			repo_data_total_sum = pd.DataFrame({
 								'total_stars_count' : repoItems['stargazers_count'],
 								'total_forks_count' : repoItems['forks_count'],
-								'total_commits_past_year': github_commits_by_week_final[github_commits_by_week_final.protocol==row['protocol']]['total'].sum()
+								'total_commits_past_year': github_commits[github_commits.protocol==row['protocol']]['total'].sum()
 								}, index=[0])
 			repo_data_total_sum['protocol'] = row['protocol']
 			github_data_total_sum = github_data_total_sum.append(repo_data_total_sum, ignore_index=True)
