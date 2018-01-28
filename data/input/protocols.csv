@@ -1,7 +1,7 @@
 ﻿protocol,color,ticker_symbol,github_repos,subreddits,stackoverflow,twitter,search
 Bitcoin,#FFB900,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[Bitcoin],[bitcoin]
 Ethereum,#515C6B,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereumproject],[ethereum]
-Maker,#038387,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr, dai integration]"
+Maker,#038387,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr]"
 Raiblocks,#107C10,XRB,[clemahieu/raiblocks],[RaiBlocks],[raiblocks],[raiblocks],[raiblocks]
 Dfinity,#847545,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity],[dfinity]
 Filecoin,#DA3B01,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]",[MineFilecoin],"[ipfs, filecoin]"
@@ -13,5 +13,5 @@ Tether,#0099BC,,[None],[Tether],[tether],[Tether_to],[tether]
 Sia,#0078D7,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]",[MySiacoin],"[sia, siacoin]"
 Storj,#0063B1,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storjproject],[storj]
 MaidSafe,#00CC6A,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe],[maidsafe]
-Bitcoin Cash,#FF8C00,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bitcoin cash]"
-Plasma,#69797E,,[None],[None],[None],[EthereumPlasma],"[plasma ethereum, plasma framework, plasma protocol]"
+Bitcoin Cash,#FF8C00,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
+Plasma,#69797E,,[None],[None],[None],[EthereumPlasma],[plasma]
