@@ -1,0 +1,12 @@
+json
+requests
+urlparse2
+re
+bs4
+datetime
+pandas
+stackapi
+python-twitter
+pytrends
+bokeh
+flask

@@ -15,7 +15,6 @@ def get_subreddit(u,max_dt):
 	u = "{}://{}{}{}".format(parsed_u.scheme, parsed_u.netloc, parsed_u.path,parsed_u.query)
 	data = get_json(u,wjson=True)
 	count = 25
-	stop_time = pd.to_datetime('now')
 	after = data['data']['after'] # get our initial 'after' variable for the url
 
 	# load the first page of data before entering the loop

@@ -1,4 +1,3 @@
-import requests
 import json
 import pandas as pd
 import requests
@@ -37,6 +36,7 @@ protocols = pd.read_csv("https://raw.githubusercontent.com/sierra073/aspie/maste
 protocols['github_repos'] = protocols['github_repos'].apply(lambda x: stringToList(x))
 protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x))
 protocols['stackoverflow'] = protocols['stackoverflow'].apply(lambda x: stringToList(x))
+protocols['twitter'] = protocols['twitter'].apply(lambda x: stringToList(x))
 protocols['search'] = protocols['search'].apply(lambda x: stringToList(x))
 
 #### wrapper function around whatever API calls are used to get a certain metric if we are appending it to current data
@@ -51,6 +51,8 @@ def api_wrapper_append(csv_data,api_func,site,u_srt,u_end,date_col,count_col,sum
             items = row['subreddits']
         elif site=='StackOverflow':
             items = row['stackoverflow']
+        elif site=='Twitter':
+            items = row['twitter']
 
         for item in items:
             if item != 'None':
