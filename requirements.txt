@@ -3,10 +3,12 @@ requests
 urlparse2
 re
 bs4
+time
 datetime
 pandas
 stackapi
 python-twitter
 pytrends
+psycopg2
 bokeh
 flask

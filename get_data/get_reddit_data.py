@@ -3,7 +3,7 @@ from access_tokens import *
 import pandas as pd
 
 ## Subreddit posts by day
-reddit_posts = pd.read_csv("../data/output/reddit_posts.csv")
+reddit_posts = get_table_from_db('select * from reddit_posts;')
 reddit_posts = reddit_posts[reddit_posts.protocol != 'Bitcoin']
 
 def get_subreddit(u,max_dt):
@@ -56,18 +56,18 @@ def get_subreddit(u,max_dt):
 	return(subreddit_dts)
 
 #Get reddit posts by day for all protocols (starts 1/12/18)
-api_wrapper_append(reddit_posts,get_subreddit,'Reddit',"https://reddit.com/r/","/new",'posted_date',['post_id'],True,True,'reddit_posts')
+api_wrapper_append(reddit_posts,get_subreddit,'Reddit',"https://reddit.com/r/","/new",'date',['post_count'],True,True,'reddit_posts')
 print("subreddit posts done")
 
 ## Subscribers by day (starts 1/14/18)
-reddit_subs = pd.read_csv("../data/output/reddit_subscribers.csv")
+reddit_subs = get_table_from_db('select * from reddit_subscribers;')
 
 def get_subscribers(u,d): 
 
 	parsed_u = urlparse(u) 
 	u = "{}://{}{}{}".format(parsed_u.scheme, parsed_u.netloc, parsed_u.path,parsed_u.query)
 	data = get_json(u,wjson=False)
-	subscribers_dt =  pd.DataFrame({'date': pd.to_datetime('now'), 'subscribers': data['data']['subscribers']},index=[0])
+	subscribers_dt =  pd.DataFrame({'subscribers': data['data']['subscribers'],'date': pd.to_datetime('now')},index=[0])
 	return(subscribers_dt)
-api_wrapper_append(reddit_subs,get_subscribers,'Reddit',"https://reddit.com/r/","/about.json",'date',['subscribers'],True,False,'reddit_subscribers')
+api_wrapper_append(reddit_subs,get_subscribers,'Reddit',"https://reddit.com/r/","/about.json",'date',['subscriber_count'],True,False,'reddit_subscribers')
 print("done")

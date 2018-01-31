@@ -1,5 +1,6 @@
 from bokeh.io import curdoc
 from bokeh.models import ColumnDataSource, DatetimeTickFormatter
+from bokeh.models.callbacks import CustomJS
 from bokeh.models.tools import HoverTool, BoxZoomTool, WheelZoomTool, PanTool, ResetTool, SaveTool
 from bokeh.models.widgets import Div, DataTable, TableColumn, Select, CheckboxGroup, DateRangeSlider
 from bokeh.layouts import layout
@@ -7,7 +8,18 @@ from bokeh.plotting import figure
 from datetime import datetime, date
 from math import radians
 from bokeh.layouts import row, column, widgetbox
+import sys
+sys.path.append('/Users/sierra/Documents/Other/aspie/get_data/')
 from initialize_data import *
+import psycopg2
+
+HOST = '127.0.0.1'
+USER = 'sierra'
+PASSWORD = 'cryptofund'
+DB = 'cryptometrics'
+
+conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5431)
+cur = conn.cursor()
 
 div_style = """
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
@@ -19,24 +31,19 @@ div_style = """
 ####################################
 ## Helper Functions
 ####################################
-def get_data_file(file):
-    fname = "data/output/" + file + ".csv"
-    data = pd.read_csv(fname)
+def get_data(name):
+    cur.execute('select * from ' + name +';')
+    names = [x[0] for x in cur.description]
+    rows = cur.fetchall()
+    data = pd.DataFrame(rows, columns=names)
+
     colors = protocols[['protocol','color']]
     data = data.merge(colors,how='inner',on='protocol')
 
-    if file == 'github_commits':
-        data = data[['protocol','week_date','total','color']]
-    if file == 'github_stars':
-        data = data[['protocol','starred_at','count','color']]
-    if file == 'stackoverflow_questions':
-        data = data[['protocol','date','question_id','color']]
-    if file == 'reddit_posts':
-        data = data[['protocol','posted_date','post_id','color']]
-    if file == 'reddit_subscribers':
-        data = data[['protocol','date','subscribers','color']]
-    if file == 'twitter_followers':
-        data = data[['protocol','date','followers','color']]
+    if name == 'github_stars':
+        data = data[data.protocol!='Bitcoin']
+    if name == 'stackoverflow_questions':
+        data = data[['protocol','date','question_count','color']]
 
     data.columns = ['protocol','date','count','color']
     return data
@@ -50,7 +57,7 @@ keys = ["l" + str(i) for i in range(0,len(protocols_list))]
 #create figures
 def build_figure(figname):
     f=figure(x_axis_type='datetime',plot_width=800, plot_height=500, 
-        background_fill_color = "grey", background_fill_alpha = .15, 
+        background_fill_color = "grey", background_fill_alpha = .1, 
         title = figname, name = figname, 
         tools=['box_zoom','wheel_zoom','pan','reset','save'], active_scroll='wheel_zoom', active_drag='pan', toolbar_location=None)
     f.title.text_font = "verdana"
@@ -58,7 +65,7 @@ def build_figure(figname):
     f.yaxis.axis_label = "Count"
     f.left[0].formatter.use_scientific = False
     f.xaxis.major_label_orientation=radians(90)
-    f.min_border_right = 90
+    f.min_border_right = 65
     f.min_border_bottom = 0
     return f
 
@@ -84,11 +91,13 @@ def build_line(fig,source_data,n):
         fig.legend.label_text_font_size = '8pt'
         fig.legend.padding = 1
         fig.legend.background_fill_color = "grey"
-        fig.legend.background_fill_alpha = 0.022   
-        # add line
+        fig.legend.background_fill_alpha = 0.015   
+        # add line 
         val = fig.line('date', 'count', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=name, line_width=2, line_alpha=0.7)
         #set Hover
-        fig.add_tools(HoverTool(renderers=[val], tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')]))
+        fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
+            tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')],
+            mode = "vline"))
         
         return val
     else:
@@ -100,7 +109,7 @@ def build_circle(fig,source_data,n):
     name = protocols_list[n]
     d = pd.DataFrame(source_data)
     d = d[d.protocol==name]
-    if d.shape[0] > 0 and d.protocol.iloc[0] != 'Bitcoin' and str(d['date'].iloc[0]) != 'nan':
+    if d.shape[0] > 0 and d.protocol.iloc[0] != 'Bitcoin' and d['date'].iloc[0] != None:
         #construct line
         d['date'] = pd.to_datetime(d['date'])
         source_sub = ColumnDataSource(
@@ -116,14 +125,15 @@ def build_circle(fig,source_data,n):
         fig.legend.label_text_font_size = '8pt'
         fig.legend.padding = 1
         fig.legend.background_fill_color = "grey"
-        fig.legend.background_fill_alpha = 0.022   
+        fig.legend.background_fill_alpha = 0.015  
         # add line
         val = fig.circle_cross('date', 'count', source=source_sub, size=14, 
             fill_color=source_sub.data['color'].iloc[0], fill_alpha=0.3, 
             line_color=source_sub.data['color'].iloc[0], line_alpha=1,legend=name)
         #set Hover
-        fig.add_tools(HoverTool(renderers=[val], tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')]))
-        
+        fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
+            tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')]))
+
         return val
     else:
         return None
@@ -132,9 +142,9 @@ def build_circle(fig,source_data,n):
 ## GitHub, StackOverflow
 ############
 # Data
-commits = get_data_file('github_commits')
-stars = get_data_file('github_stars')
-questions = get_data_file('stackoverflow_questions')
+commits = get_data('github_commits')
+stars = get_data('github_stars')
+questions = get_data('stackoverflow_questions')
 
 # import PreText data (static table)
 github_data_total = pd.read_csv("data/output/github_data_total.csv")
@@ -164,7 +174,7 @@ gcolumns = [
         TableColumn(field="total_forks_count", title="Total Forks"),
         TableColumn(field="total_stars_count", title="Total Stars"),
         TableColumn(field="created_at", title="GitHub Created"),
-        TableColumn(field="count", title="StackOverflow Questions")
+        TableColumn(field="count", title="StackOverflow")
     ]
 gstats = DataTable(source=gsource_stats, columns=gcolumns, fit_columns=True, row_headers=False, width=502, height=685)
 gcomments = Div(text=div_style + '''<div class="sans-font" style="width:700px;">''' 
@@ -183,9 +193,10 @@ gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Qu
 sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Social Media and Search Activity</h2></div>')
 
 # Data
-reddit_posts = get_data_file('reddit_posts')
-reddit_subscribers = get_data_file('reddit_subscribers')
-twitter_followers = get_data_file('twitter_followers')
+reddit_posts = get_data('reddit_posts')
+reddit_subscribers = get_data('reddit_subscribers')
+twitter_followers = get_data('twitter_followers')
+searchinterest = get_data('search_interest')
 
 # import PreText data (static table)
 reddit_posts_total = reddit_posts[['protocol','count']].groupby(['protocol']).sum().reset_index()
@@ -202,11 +213,12 @@ sosource_stats.data = sosource_stats.from_df(social_data_total)
 f_rposts = build_figure("Reddit Posts")
 f_rsubs = build_figure("Reddit Subscribers")
 f_tfoll = build_figure("Twitter Followers")
-print(f_tfoll)
+f_search = build_figure("Search Interest")
 
 lines_dict_rposts = dict.fromkeys(keys)
 lines_dict_rsubs = dict.fromkeys(keys)
 lines_dict_tfoll = dict.fromkeys(keys)
+lines_dict_search = dict.fromkeys(keys)
 
 #set up widgets
 socolumns = [
@@ -215,11 +227,11 @@ socolumns = [
         TableColumn(field="Reddit Subscribers",title="Reddit Subscribers"),
         TableColumn(field="Twitter Followers",title="Twitter Followers")
     ]
-sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=362, height=685)
+sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=380, height=685)
 
 #controls
 soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
-sometric = Select(value='Reddit Posts', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers'])
+sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest'])
 
 ####################################
 ## Updates
@@ -249,6 +261,10 @@ def add_lines(fig):
     if fig=="Twitter Followers":
         for l in lines_dict_tfoll:
             lines_dict_tfoll[l] = build_circle(f_tfoll,twitter_followers,i)
+            i+=1
+    if fig=="Search Interest":
+        for l in lines_dict_search:
+            lines_dict_search[l] = build_line(f_search,searchinterest,i)
             i+=1
 def g_lineupdate():
     i = 0
@@ -296,6 +312,13 @@ def so_lineupdate():
             if l6!= None:
                 l6.visible = i in soprotocolSelect.active
             i+=1
+    if sofig=='Search Interest':
+        for l in lines_dict_search:
+            l7 = lines_dict_search[l]
+            if l7!= None:
+                l7.visible = i in soprotocolSelect.active
+            i+=1
+
 # Update checkbox controls
 gprotocolSelect.on_change('active', lambda attr, old, new: g_lineupdate())
 soprotocolSelect.on_change('active', lambda attr, old, new: so_lineupdate())
@@ -329,6 +352,10 @@ def so_selectCallback():
         add_lines('Twitter Followers')
         solayout.children[1].children[0].children[1].children[1] = row(f_tfoll)
         so_lineupdate()
+    if sometric.value=='Search Interest':
+        add_lines('Search Interest')
+        solayout.children[1].children[0].children[1].children[1] = row(f_search)
+        so_lineupdate()
 
 # Update select controls
 gmetric.on_change('value', lambda attr, old, new: g_selectCallback())
@@ -347,7 +374,7 @@ glayout = column(gsection_title, gmain_elements, sizing_mode='scale_width')
 
 #Social/Search
 solinesSelect = row(soprotocolSelect)
-sofig = row(f_rposts)
+sofig = row(f_search)
 sofig_final = column(sometric,sofig)
 somain_col = row(solinesSelect,sofig_final)
 somain_elements = row(somain_col, sostats)
@@ -355,7 +382,7 @@ solayout = column(sosection_title,somain_elements, sizing_mode='scale_width')
 
 # initialize
 add_lines('Commits')
-add_lines('Reddit Posts')
+add_lines('Search Interest')
 g_lineupdate()
 so_lineupdate()
 

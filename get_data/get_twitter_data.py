@@ -4,11 +4,12 @@ import pandas as pd
 import twitter
 from bs4 import BeautifulSoup
 
+twitterapi = twitter.Api(consumer_key=twitter_consumer_key,
+              consumer_secret=twitter_consumer_secret,
+              access_token_key=twitter_access_token_key,
+              access_token_secret=twitter_access_token_secret)
+
 def get_twitter_status_data(x,max_dt):
-    twitterapi = twitter.Api(consumer_key=twitter_consumer_key,
-                  consumer_secret=twitter_consumer_secret,
-                  access_token_key=twitter_access_token_key,
-                  access_token_secret=twitter_access_token_secret)
 
     count = 100
     results = twitterapi.GetSearch(
@@ -51,6 +52,6 @@ def get_twitter_followers(url,max_dt):
     followers_dt =  pd.DataFrame({'date': pd.to_datetime('now'), 'followers': num_followers},index=[0])
     return(followers_dt)
 
-twitter_followers = pd.read_csv("../data/output/twitter_followers.csv")
-api_wrapper_append(twitter_followers,get_twitter_followers,'Twitter',"https://twitter.com/","",'date',['followers'],True,False,'twitter_followers2')
+twitter_followers = get_table_from_db('select * from twitter_followers;')
+api_wrapper_append(twitter_followers,get_twitter_followers,'Twitter',"https://twitter.com/","",'date',['follower_count'],True,False,'twitter_followers')
 print("done")
