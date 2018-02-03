@@ -15,3 +15,4 @@ Storj,#0063B1,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj]
 MaidSafe,#00CC6A,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe],[maidsafe]
 Bitcoin Cash,#FF8C00,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
 Plasma,#69797E,,[None],[None],[None],[EthereumPlasma],[plasma]
+Stellar,#F64C72,XLM,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar]
