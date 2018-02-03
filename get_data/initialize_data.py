@@ -142,7 +142,6 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
                 data = data[data.date_rank > 1]
                 data = data.drop(['date_rank'],axis=1)
                 data = data.reset_index(drop=True)
-
         # append new data and reformat. be overly certain to remove index column and drop any duplicates
         counts_by_day = data.append(counts_by_day,ignore_index=True)
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col])
@@ -151,7 +150,6 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
         counts_by_day = counts_by_day.drop_duplicates()
         counts_by_day = counts_by_day.drop(['index'],axis=1)
         counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).max()).reset_index()
-
         # ensure each protocol is listed
         result_protocols = pd.DataFrame(counts_by_day.groupby('protocol').size()).reset_index()
         for index, row in protocols.iterrows():

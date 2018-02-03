@@ -16,6 +16,7 @@ def get_stackoverflow_questions(search_title,max_dt):
 	# title search
 		results_title = SITE.fetch('search', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', intitle=search_title)
 		results_title = pd.DataFrame(results_title['items'])
+		print("success")
 	if not results_title.empty:
 		questions['date'] = pd.to_datetime(results_title['creation_date'],unit='s').dt.date
 		questions['question_id'] = results_title['question_id']
@@ -24,6 +25,7 @@ def get_stackoverflow_questions(search_title,max_dt):
 	if str(max_dt) != 'NaT':
 		results_tag = SITE.fetch('questions', fromdate=datetime.strptime(str(max_dt), '%Y-%m-%d %H:%M:%S'), todate=datetime.now(), sort='creation', tagged=search_title)
 		results_tag = pd.DataFrame(results_tag['items'])
+		print("success")
 	if not results_tag.empty:
 		tagged['date'] = pd.to_datetime(results_tag['creation_date'],unit='s').dt.date
 		tagged['question_id'] = results_tag['question_id']
@@ -40,9 +42,9 @@ def get_stackoverflow_questions(search_title,max_dt):
 		questions['question_id'] = 0
 		questions['views'] = 0
 		questions_final = questions
-
+	questions_final.columns = ['date', 'question_count', 'views']
 	return(questions_final)
 
 # questions by day for each search term (as tag and title), since Jan 2017
-stackoverflow_questions = pd.read_csv("../data/output/stackoverflow_questions.csv")
-api_wrapper_append(stackoverflow_questions,get_stackoverflow_questions,'StackOverflow',"","",'date',['question_id','views'],True,True,'stackoverflow_questions')
+stackoverflow_questions = get_table_from_db('select * from stackoverflow_questions;')
+api_wrapper_append(stackoverflow_questions,get_stackoverflow_questions,'StackOverflow',"","",'date',['question_count','views'],True,True,'stackoverflow_questions')

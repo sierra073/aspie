@@ -44,8 +44,8 @@ def get_data(name):
         data = data[data.protocol!='Bitcoin']
     if name == 'stackoverflow_questions':
         data = data[['protocol','date','question_count','color']]
-
-    data.columns = ['protocol','date','count','color']
+    if name != 'market_cap_volume':
+        data.columns = ['protocol','date','count','color']
     return data
 
 # List of protocols
@@ -188,7 +188,7 @@ gprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100
 gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
 
 ############
-## Reddit, Twitter, Search
+## Reddit, Twitter, Search, HackerNews
 ############
 sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Social Media and Search Activity</h2></div>')
 
@@ -219,6 +219,38 @@ lines_dict_rposts = dict.fromkeys(keys)
 lines_dict_rsubs = dict.fromkeys(keys)
 lines_dict_tfoll = dict.fromkeys(keys)
 lines_dict_search = dict.fromkeys(keys)
+
+#set up widgets
+socolumns = [
+        TableColumn(field="Protocol",title="Protocol"),
+        TableColumn(field="Reddit Posts",title="Reddit Posts"),
+        TableColumn(field="Reddit Subscribers",title="Reddit Subscribers"),
+        TableColumn(field="Twitter Followers",title="Twitter Followers")
+    ]
+sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=380, height=685)
+
+#controls
+soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
+sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest'])
+
+############
+## Market Cap, Volume, Price (historic)
+############
+tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Historical Transactions</h2></div>')
+
+# Data
+market_cap_volume = get_data('market_cap_volume')
+volume = market_cap_volume[['protocol','date','volume']]
+market_cap = market_cap_volume[['protocol','date','market_cap']]
+average_price = market_cap_volume[['protocol','date','average']]
+
+f_volume = build_figure("Reddit Posts")
+f_market_cap = build_figure("Reddit Subscribers")
+f_average_price = build_figure("Twitter Followers")
+
+lines_dict_rposts = dict.fromkeys(keys)
+lines_dict_rsubs = dict.fromkeys(keys)
+lines_dict_tfoll = dict.fromkeys(keys)
 
 #set up widgets
 socolumns = [

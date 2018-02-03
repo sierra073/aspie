@@ -8,5 +8,7 @@ python get_reddit_data.py &
 python get_stackoverflow_data.py &
 python get_twitter_data.py &
 python get_searchinterest_data.py &
+python get_marketcap_history.py &
+python eth_address_count.py &
 wait
 echo "Done!"

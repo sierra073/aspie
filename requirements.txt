@@ -9,6 +9,7 @@ pandas
 stackapi
 python-twitter
 pytrends
+coinmarketcap
 psycopg2
 bokeh
 flask
