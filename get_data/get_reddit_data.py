@@ -69,5 +69,6 @@ def get_subscribers(u,d):
 	data = get_json(u,wjson=False)
 	subscribers_dt =  pd.DataFrame({'subscribers': data['data']['subscribers'],'date': pd.to_datetime('now')},index=[0])
 	return(subscribers_dt)
+	
 api_wrapper_append(reddit_subs,get_subscribers,'Reddit',"https://reddit.com/r/","/about.json",'date',['subscriber_count'],True,False,'reddit_subscribers')
 print("done")

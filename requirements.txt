@@ -10,6 +10,7 @@ stackapi
 python-twitter
 pytrends
 coinmarketcap
+haxor
 psycopg2
 bokeh
 flask

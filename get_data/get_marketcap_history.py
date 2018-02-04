@@ -15,7 +15,8 @@ for index, row in protocols.iterrows():
             p='Bitcoin-Cash'
         df = coinmarketcap_usd_history.main([p,'2017-01-01',str(datetime.now().date()),'--dataframe'])
         df.columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'market_cap','avg']
-        df['protocol'] = p
+        df['protocol'] = row['protocol']
+        print(row['protocol'])
         market_cap_volume_data = market_cap_volume_data.append(df)
 
 cols = market_cap_volume_data.columns.tolist()

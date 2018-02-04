@@ -10,5 +10,6 @@ python get_twitter_data.py &
 python get_searchinterest_data.py &
 python get_marketcap_history.py &
 python eth_address_count.py &
+python get_hackernews_data.py &
 wait
 echo "Done!"
