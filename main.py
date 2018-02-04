@@ -227,6 +227,7 @@ reddit_posts = get_data('reddit_posts')
 reddit_subscribers = get_data('reddit_subscribers')
 twitter_followers = get_data('twitter_followers')
 searchinterest = get_data('search_interest')
+hackernews_stories = get_data('hackernews_stories')
 
 # import PreText data (static table)
 reddit_posts_total = reddit_posts[['protocol','count']].groupby(['protocol']).sum().reset_index()
@@ -244,11 +245,13 @@ f_rposts = build_figure("Reddit Posts",1)
 f_rsubs = build_figure("Reddit Subscribers",1)
 f_tfoll = build_figure("Twitter Followers",1)
 f_search = build_figure("Search Interest",1)
+f_hackernews = build_figure("HackerNews Stories",1)
 
 lines_dict_rposts = dict.fromkeys(keys)
 lines_dict_rsubs = dict.fromkeys(keys)
 lines_dict_tfoll = dict.fromkeys(keys)
 lines_dict_search = dict.fromkeys(keys)
+lines_dict_hackernews = dict.fromkeys(keys)
 
 #set up widgets
 socolumns = [
@@ -261,7 +264,7 @@ sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, 
 
 #controls
 soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
-sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest'])
+sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
 
 ############
 ## Market Cap, Volume, Price (historic)
@@ -315,11 +318,15 @@ def add_lines(fig):
             i+=1
     if fig=="Twitter Followers":
         for l in lines_dict_tfoll:
-            lines_dict_tfoll[l] = build_circle(f_tfoll,twitter_followers,i,1)
+            lines_dict_tfoll[l] = build_circle(f_tfoll,twitter_followers,i)
             i+=1
     if fig=="Search Interest":
         for l in lines_dict_search:
             lines_dict_search[l] = build_line(f_search,searchinterest,i,1)
+            i+=1
+    if fig=="HackerNews Stories":
+        for l in lines_dict_hackernews:
+            lines_dict_hackernews[l] = build_circle(f_hackernews,hackernews_stories,i)
             i+=1
     if fig=="Total Volume":
         for l in lines_dict_volume:
@@ -385,6 +392,12 @@ def so_lineupdate():
             if l7!= None:
                 l7.visible = i in soprotocolSelect.active
             i+=1
+    if sofig=='HackerNews Stories':
+        for l in lines_dict_hackernews:
+            l11 = lines_dict_hackernews[l]
+            if l11!= None:
+                l11.visible = i in soprotocolSelect.active
+            i+=1
 def t_lineupdate():
     i = 0
     #get the select value
@@ -446,6 +459,10 @@ def so_selectCallback():
     if sometric.value=='Search Interest':
         add_lines('Search Interest')
         solayout.children[1].children[0].children[1].children[1] = row(f_search)
+        so_lineupdate()
+    if sometric.value=='HackerNews Stories':
+        add_lines('HackerNews Stories')
+        solayout.children[1].children[0].children[1].children[1] = row(f_hackernews)
         so_lineupdate()
 def t_selectCallback():
     # Either add or remove the second graph

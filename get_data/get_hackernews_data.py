@@ -18,7 +18,7 @@ def get_hackernews_title_count(string,all_items):
         if row['title'].encode('utf-8').find(string) != -1:
             count +=1
 
-    hackernews_cnt =  pd.DataFrame({'date': pd.to_datetime('now'), 'story_count': count},index=[0])
+    hackernews_cnt =  pd.DataFrame({'date': pd.to_datetime('now').date(), 'story_count': count},index=[0])
     return hackernews_cnt
 
 data = get_table_from_db('select * from hackernews_stories;')
