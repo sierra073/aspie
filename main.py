@@ -231,10 +231,12 @@ hackernews_stories = get_data('hackernews_stories')
 
 # import PreText data (static table)
 reddit_posts_total = reddit_posts[['protocol','count']].groupby(['protocol']).sum().reset_index()
-reddit_subscribers_total = reddit_subscribers[['protocol','count']].groupby(['protocol']).max().reset_index()
-twitter_followers_total = twitter_followers[['protocol','count']].groupby(['protocol']).max().reset_index()
-reddit_data_total = reddit_posts_total.merge(reddit_subscribers_total,how='outer',on='protocol')
-social_data_total = reddit_data_total.merge(twitter_followers_total,how='outer',on='protocol')
+
+reddit_subscribers_total = reddit_subscribers[reddit_subscribers['date'] == datetime.now().date()]
+twitter_followers_total = twitter_followers[twitter_followers['date'] == datetime.now().date()]
+reddit_data_total = reddit_posts_total.merge(reddit_subscribers_total[['protocol','count']],how='outer',on='protocol')
+social_data_total = reddit_data_total.merge(twitter_followers_total[['protocol','count']],how='outer',on='protocol')
+
 social_data_total.columns = ['Protocol','Reddit Posts','Reddit Subscribers', 'Twitter Followers']
 social_data_total = social_data_total.fillna("") 
 
