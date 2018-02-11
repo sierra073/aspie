@@ -1,4 +1,3 @@
-json
 requests
 urlparse2
 re
