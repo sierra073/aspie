@@ -1,0 +1,31 @@
+protocol,date,question_id,views
+Bitcoin,12/31/16,0,0
+Bitcoin,1/1/17,0,0
+Ethereum,12/31/16,0,0
+Ethereum,1/1/17,0,0
+Maker,12/31/16,0,0
+Maker,1/1/17,0,0
+Raiblocks,12/31/16,0,0
+Raiblocks,1/1/17,0,0
+Dfinity,12/31/16,0,0
+Dfinity,1/1/17,0,0
+Filecoin,12/31/16,0,0
+Filecoin,1/1/17,0,0
+Monero,12/31/16,0,0
+Monero,1/1/17,0,0
+Urbit,12/31/16,0,0
+Urbit,1/1/17,0,0
+Raiden,12/31/16,0,0
+Raiden,1/1/17,0,0
+Tezos,12/31/16,0,0
+Tezos,1/1/17,0,0
+Tether,12/31/16,0,0
+Tether,1/1/17,0,0
+Sia,12/31/16,0,0
+Sia,1/1/17,0,0
+Storj,12/31/16,0,0
+Storj,1/1/17,0,0
+MaidSafe,12/31/16,0,0
+MaidSafe,1/1/17,0,0
+Bitcoin Cash,12/31/16,0,0
+Bitcoin Cash,1/1/17,0,0
