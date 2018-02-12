@@ -73,7 +73,7 @@ def insert_db(df,tablename):
     conn.close()
 
 #### Import input data with Protocols info 
-protocols = pd.read_csv("https://raw.githubusercontent.com/sierra073/aspie/master/data/input/protocols.csv")
+protocols = pd.read_csv("../data/input/protocols.csv")
 
 protocols['github_repos'] = protocols['github_repos'].apply(lambda x: stringToList(x))
 protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x))
