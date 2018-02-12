@@ -8,8 +8,8 @@ import psycopg2
 
 # variables
 REQUEST_HEADERS =  {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-HOST = '127.0.0.1'
-USER = 'sierra'
+HOST = '159.89.155.200'
+USER = 'sbbw'
 PASSWORD = 'cryptofund'
 DB = 'cryptometrics'
 
@@ -39,7 +39,7 @@ def stringToList(string):
 
 # Execute a query on a Postgres database and populate a pandas dataframe
 def get_table_from_db(query):
-    conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5431)
+    conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
     cur = conn.cursor()
     cur.execute(query)
 
@@ -52,7 +52,7 @@ def get_table_from_db(query):
 
 # populate a Postgres table from a pandas dataframe
 def insert_db(df,tablename):
-    conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5431)
+    conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
     cur = conn.cursor()
     #empty the table
     cur.execute('delete from ' + tablename + ';')

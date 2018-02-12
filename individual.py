@@ -9,18 +9,18 @@ from datetime import datetime, date
 from math import radians
 from bokeh.layouts import row, column, widgetbox
 import sys
-#sys.path.append('/Users/sierra/Documents/Other/aspie/get_data/')
+sys.path.append('get_data/')
 from initialize_data import *
 import psycopg2
 
 #### Variables
 
-HOST = '127.0.0.1'
-USER = 'sierra'
+HOST = '159.89.155.200'
+USER = 'sbbw'
 PASSWORD = 'cryptofund'
 DB = 'cryptometrics'
 
-conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5431)
+conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
 cur = conn.cursor()
 
 protocols_list = list(protocols['protocol'])
