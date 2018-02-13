@@ -2,7 +2,7 @@
 Bitcoin,#FFB900,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[Bitcoin],[bitcoin]
 Ethereum,#515C6B,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereumproject],[ethereum]
 Maker,#038387,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr, maker]"
-Raiblocks,#107C10,XRB,[clemahieu/raiblocks],[RaiBlocks],[raiblocks],[raiblocks],[raiblocks]
+Raiblocks,#107C10,XRB,[clemahieu/raiblocks],"[RaiBlocks, nanocurrency]",[raiblocks],[raiblocks],[raiblocks]
 Dfinity,#847545,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity],[dfinity]
 Filecoin,#DA3B01,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]",[MineFilecoin],"[ipfs, filecoin]"
 Monero,#E81123,XMR,[monero-project/monero],[Monero],[monero],[monerocurrency],[monero]

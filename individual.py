@@ -8,8 +8,6 @@ from bokeh.plotting import figure
 from datetime import datetime, date
 from math import radians
 from bokeh.layouts import row, column, widgetbox
-import sys
-sys.path.append('get_data/')
 from initialize_data import *
 import psycopg2
 
