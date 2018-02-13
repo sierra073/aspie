@@ -26,6 +26,8 @@ hackernews_day_count_all = pd.DataFrame([])
 
 for index, row in protocols.iterrows():
     string = row['protocol']
+    if string == 'Raiblocks':
+        string == 'Nano'
     hackernews_day_count = get_hackernews_title_count(string,all_items)
     hackernews_day_count['protocol'] = string
     cols = hackernews_day_count.columns.tolist()

@@ -9,8 +9,6 @@ from datetime import datetime, date
 from math import radians
 from bokeh.layouts import row, column, widgetbox
 from initialize_data import *
-print("imported")
-print(protocols)
 import psycopg2
 
 HOST = '159.89.155.200'
@@ -126,41 +124,6 @@ def build_line(fig,source_data,n,type):
                 tooltips=[('Name', name),('Date', '@date_formatted'),("Value", "@value{'$ 0.00 a'}")],
                 mode = "vline"))
         
-        return val
-    else:
-        return None
-
-#add all time series as bar charts
-def build_circle(fig,source_data,n):
-    #select subset of source (workaround to get Hover to work)
-    name = protocols_list[n]
-    d = pd.DataFrame(source_data)
-    d = d[d.protocol==name]
-    if d.shape[0] > 0 and d.protocol.iloc[0] != 'Bitcoin' and d['date'].iloc[0] != None:
-        #construct line
-        d['date'] = pd.to_datetime(d['date'])
-        source_sub = ColumnDataSource(
-            data = dict(
-            protocol=d['protocol'],
-            date=d['date'],
-            count=d['count'],
-            color=d['color'],
-            date_formatted = d['date'].apply(lambda d: d.strftime('%Y-%m-%d'))
-        ))
-        #format legend
-        fig.legend.spacing = 1
-        fig.legend.label_text_font_size = '8pt'
-        fig.legend.padding = 1
-        fig.legend.background_fill_color = "grey"
-        fig.legend.background_fill_alpha = 0.015  
-        # add line
-        val = fig.circle_cross('date', 'count', source=source_sub, size=14, 
-            fill_color=source_sub.data['color'].iloc[0], fill_alpha=0.3, 
-            line_color=source_sub.data['color'].iloc[0], line_alpha=1,legend=name)
-        #set Hover
-        fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
-            tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')]))
-
         return val
     else:
         return None
@@ -320,7 +283,7 @@ def add_lines(fig):
             i+=1
     if fig=="Twitter Followers":
         for l in lines_dict_tfoll:
-            lines_dict_tfoll[l] = build_circle(f_tfoll,twitter_followers,i)
+            lines_dict_tfoll[l] = build_line(f_tfoll,twitter_followers,i,1)
             i+=1
     if fig=="Search Interest":
         for l in lines_dict_search:
