@@ -291,7 +291,7 @@ def add_lines(fig):
             i+=1
     if fig=="HackerNews Stories":
         for l in lines_dict_hackernews:
-            lines_dict_hackernews[l] = build_circle(f_hackernews,hackernews_stories,i)
+            lines_dict_hackernews[l] = build_line(f_hackernews,hackernews_stories,i,1)
             i+=1
     if fig=="Total Volume":
         for l in lines_dict_volume:

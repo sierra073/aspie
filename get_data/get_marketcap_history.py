@@ -13,6 +13,8 @@ for index, row in protocols.iterrows():
             p='Raiden-Network-Token'
         if p=='Bitcoin Cash':
             p='Bitcoin-Cash'
+        if p=='Raiblocks':
+            p='nano'
         df = coinmarketcap_usd_history.main([p,'2017-01-01',str(datetime.now().date()),'--dataframe'])
         df.columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'market_cap','avg']
         df['protocol'] = row['protocol']
