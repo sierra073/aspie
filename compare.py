@@ -71,7 +71,7 @@ def build_figure(figname,type):
         f.yaxis.axis_label = "Value"
         f.yaxis.formatter = NumeralTickFormatter(format='($ 0.00 a)')
     f.xaxis.major_label_orientation=radians(90)
-    f.min_border_right = 65
+    f.min_border_right = 55
     f.min_border_bottom = 0
     return f
 
@@ -166,15 +166,10 @@ gcolumns = [
         TableColumn(field="total_commits_past_year", title="Total Commits"),
         TableColumn(field="total_forks_count", title="Total Forks"),
         TableColumn(field="total_stars_count", title="Total Stars"),
-        TableColumn(field="created_at", title="GitHub Created"),
+        TableColumn(field="created_at", title="Repo Created"),
         TableColumn(field="count", title="StackOverflow")
     ]
 gstats = DataTable(source=gsource_stats, columns=gcolumns, fit_columns=True, row_headers=False, width=502, height=685)
-gcomments = Div(text=div_style + '''<div class="sans-font" style="width:700px;">''' 
-    + "<font size='1'>\
-    <ul><li>Commits are only available at a weekly basis for the last 12 months, hence why the data starts end of January 2017</li>\
-    <li>StackOverflow questions counted since January 2017. Questions are aggregated by protocol by searching for those that contain the term(s) specified in our input data in their title OR for those tagged as the term(s). Thus, it's possible for questions to be double counted if the term is contained in the question title AND question tag, but highly unlikely based on the data observed.</li>\
-    </ul></font></div>")
 
 #controls
 gprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
@@ -253,7 +248,7 @@ lines_dict_marketcap = dict.fromkeys(keys)
 lines_dict_averageprice = dict.fromkeys(keys)
 
 #controls
-tprotocolSelect = CheckboxGroup(labels=protocols_list, active=[1,6,16], width=100)
+tprotocolSelect = CheckboxGroup(labels=protocols_list, active=[2,3,6,16], width=100)
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
 
 ####################################
@@ -455,7 +450,7 @@ tmetric.on_change('value', lambda attr, old, new: t_selectCallback())
 #GitHub & StackOverflow
 glinesSelect = row(gprotocolSelect)
 gfig = row(f_commits)
-gfig_final = column(gmetric,gfig,gcomments)
+gfig_final = column(gmetric,gfig)
 gmain_col = row(glinesSelect,gfig_final)
 gmain_elements = row(gmain_col, gstats)
 glayout = column(gsection_title, gmain_elements, sizing_mode='scale_width')

@@ -23,13 +23,17 @@ cur = conn.cursor()
 
 protocols_list = list(protocols['protocol'])
 
-#### Set up widgets
+#### Set up widgets and figures
 
 protocolSelect = Select(value='Ethereum', options=protocols_list)
-protocolTitle = Div(text='<font color="turquoise"><h3>' + protocolSelect.value + '</h3></font>')
+protocolTitle = Div(text='<font color="black"><h2>' + protocolSelect.value + '</h2></font>')
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
 gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
 sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
+
+gfig=figure()
+sofig=figure()
+tfig=figure()
 
 #### Helper Functions
 
@@ -38,7 +42,7 @@ def get_hdata(tablename, col):
     if tablename != 'market_cap_volume':
         cur.execute('''select * from %s where protocol = '%s' ;''' %(tablename, protocol))
     else:
-        cur.execute('''select protocol, date, %s from %s where protocol = '%s' ;''' %(tablename, col, protocol))
+        cur.execute('''select protocol, date, %s from %s where protocol = '%s' ;''' %(col, tablename, protocol))
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
     data = pd.DataFrame(rows, columns=names)
@@ -47,9 +51,9 @@ def get_hdata(tablename, col):
         colors = protocols[['protocol','color']]
         data = data.merge(colors,how='inner',on='protocol')
 
-    if name == 'stackoverflow_questions':
+    if tablename == 'stackoverflow_questions':
         data = data[['protocol','date','question_count','color']]
-    if name != 'market_cap_volume':
+    if tablename != 'market_cap_volume':
         data.columns = ['protocol','date','count','color']
     else:
         data.columns = ['protocol','date','value','color']
@@ -123,7 +127,7 @@ def build_line(fig,source_data,type):
 #### Updates
 
 def divs_update():
-    protocolTitle.text='<font color="turquoise"><h3>' + protocolSelect.value + '</h3></font>'
+    protocolTitle.text='<font color="black"><h2>' + protocolSelect.value + '</h2></font>'
     
 protocolSelect.on_change('value', lambda attr, old, new: divs_update())
 
@@ -137,10 +141,10 @@ def t_update():
 
     data = get_hdata('market_cap_volume', col)
 
-    fig = build_figure(tmetric.value,2)
-    build_line(fig,data,2)
+    tfig = build_figure(tmetric.value,2)
+    build_line(tfig,data,2)
 
-    tlayout.children[1].children[0].children[1].children[1] = row(fig) #will change
+    tlayout.children[1] = row(tfig) #will change
 
 protocolSelect.on_change('value', lambda attr, old, new: t_update())
 tmetric.on_change('value', lambda attr, old, new: t_update())
@@ -155,10 +159,11 @@ def g_update():
 
     data = get_hdata(tablename, "")
 
-    fig = build_figure(gmetric.value,1)
-    build_line(fig,data,1)
+    gfig = build_figure(gmetric.value,1)
+    build_line(gfig,data,1)
 
-    glayout.children[1].children[0].children[1].children[1] = row(fig) #will change
+    glayout.children[1] = row(gfig) #will change
+
 
 protocolSelect.on_change('value', lambda attr, old, new: g_update())
 gmetric.on_change('value', lambda attr, old, new: g_update())
@@ -177,13 +182,34 @@ def so_update():
 
     data = get_hdata(tablename, "")
 
-    fig = build_figure(sometric.value,1)
-    build_line(fig,data,1)
+    sofig = build_figure(sometric.value,1)
+    build_line(sofig,data,1)
 
-    solayout.children[1].children[0].children[1].children[1] = row(fig) #will change
+    solayout.children[1] = row(sofig) #will change
 
 protocolSelect.on_change('value', lambda attr, old, new: so_update())
 sometric.on_change('value', lambda attr, old, new: so_update())
 
 #### Layouts, Initialization
+protocolSelectw = row(protocolSelect)
+title = row(protocolTitle)
+curdoc().add_root(column(protocolSelectw,title))
+
+#GitHub & StackOverflow
+glayout = column(gmetric,gfig,sizing_mode='scale_width')
+
+#Social/Search
+solayout = column(sometric,sofig, sizing_mode='scale_width')
+
+#Transactions
+tlayout = column(tmetric,tfig, sizing_mode='scale_width')
+
+divs_update()
+g_update()
+so_update()
+t_update()
+
+curdoc().add_root(glayout)
+curdoc().add_root(solayout)
+curdoc().add_root(tlayout)
 
