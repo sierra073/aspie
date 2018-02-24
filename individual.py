@@ -3,6 +3,7 @@ from bokeh.models import ColumnDataSource, DatetimeTickFormatter, NumeralTickFor
 from bokeh.models.callbacks import CustomJS
 from bokeh.models.tools import HoverTool, BoxZoomTool, WheelZoomTool, PanTool, ResetTool, SaveTool
 from bokeh.models.widgets import Div, DataTable, TableColumn, Select, CheckboxGroup, DateRangeSlider
+from bokeh.models.layouts import Spacer
 from bokeh.layouts import layout
 from bokeh.plotting import figure
 from datetime import datetime, date
@@ -18,15 +19,26 @@ USER = 'sbbw'
 PASSWORD = 'cryptofund'
 DB = 'cryptometrics'
 
+div_style = """
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+    <style>
+        .sans-font {
+            font-family: "Open Sans"; }
+        *{
+            border: 0; 
+            margin: 0; 
+            margin: 0; }
+    </style>
+"""
+
 conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
 cur = conn.cursor()
 
 protocols_list = list(protocols['protocol'])
 
-#### Set up widgets and figures
-
-protocolSelect = Select(value='Ethereum', options=protocols_list)
-protocolTitle = Div(text='<font color="black"><h2>' + protocolSelect.value + '</h2></font>')
+#### Set up widgets, figures, static titles
+protocolSelect = Select(title="Select a protocol:", value='Ethereum', options=protocols_list)
+protocolTitle = Div(text=div_style + '<div class="sans-font"><h1></h1></div>')
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
 gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
 sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
@@ -34,6 +46,10 @@ sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subs
 gfig=figure()
 sofig=figure()
 tfig=figure()
+
+gsection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>GitHub and StackOverflow Activity</h3></div>')
+sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>Social Media and Search Activity</h3></div>')
+tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>Historical Transactions</h3></div>')
 
 #### Helper Functions
 
@@ -61,11 +77,9 @@ def get_hdata(tablename, col):
     return data
 
 def build_figure(figname,type):
-    f=figure(x_axis_type='datetime',plot_width=500, plot_height=200, 
+    f=figure(x_axis_type='datetime',plot_width=600, plot_height=320, 
         background_fill_color = "grey", background_fill_alpha = .1, 
-        title = figname, name = figname, 
         tools=['box_zoom','wheel_zoom','pan','reset','save'], active_scroll='wheel_zoom', active_drag='pan', toolbar_location=None)
-    f.title.text_font = "verdana"
     f.xaxis.axis_label = "Date"
     if type==1:
         f.yaxis.axis_label = "Count"
@@ -74,6 +88,9 @@ def build_figure(figname,type):
         f.yaxis.axis_label = "Value"
         f.yaxis.formatter = NumeralTickFormatter(format='($ 0.00 a)')
     f.xaxis.major_label_orientation=radians(90)
+    f.min_border_right = 25
+    f.min_border_bottom = 1
+    f.min_border_top = 1
     return f
 
 def build_line(fig,source_data,type):
@@ -102,18 +119,11 @@ def build_line(fig,source_data,type):
                 color=d['color'],
                 date_formatted = d['date'].apply(lambda d: d.strftime('%Y-%m-%d'))
             ))
-        #format legend
-        fig.legend.spacing = 1
-        fig.legend.label_text_font_size = '8pt'
-        fig.legend.padding = 1
-        fig.legend.background_fill_color = "grey"
-        fig.legend.background_fill_alpha = 0.015  
-        leg = protocolSelect.value
         # add line 
         if type==1:
-            val = fig.line('date', 'count', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
+            val = fig.line('date', 'count', source=source_sub, line_color=source_sub.data['color'].iloc[0], line_width=2, line_alpha=0.7)
         else:
-            val = fig.line('date', 'value', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
+            val = fig.line('date', 'value', source=source_sub, line_color=source_sub.data['color'].iloc[0], line_width=2, line_alpha=0.7)
         #set Hover
         if type==1:
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
@@ -127,7 +137,7 @@ def build_line(fig,source_data,type):
 #### Updates
 
 def divs_update():
-    protocolTitle.text='<font color="black"><h2>' + protocolSelect.value + '</h2></font>'
+    protocolTitle.text=div_style + '<div class="sans-font"><h1>' + protocolSelect.value +'</h1></div>'
     
 protocolSelect.on_change('value', lambda attr, old, new: divs_update())
 
@@ -144,7 +154,7 @@ def t_update():
     tfig = build_figure(tmetric.value,2)
     build_line(tfig,data,2)
 
-    tlayout.children[1] = row(tfig) #will change
+    tlayout.children[2] = row(tfig) #will change
 
 protocolSelect.on_change('value', lambda attr, old, new: t_update())
 tmetric.on_change('value', lambda attr, old, new: t_update())
@@ -162,7 +172,7 @@ def g_update():
     gfig = build_figure(gmetric.value,1)
     build_line(gfig,data,1)
 
-    glayout.children[1] = row(gfig) #will change
+    glayout.children[2] = row(gfig) #will change
 
 
 protocolSelect.on_change('value', lambda attr, old, new: g_update())
@@ -185,31 +195,30 @@ def so_update():
     sofig = build_figure(sometric.value,1)
     build_line(sofig,data,1)
 
-    solayout.children[1] = row(sofig) #will change
+    solayout.children[2] = row(sofig) #will change
 
 protocolSelect.on_change('value', lambda attr, old, new: so_update())
 sometric.on_change('value', lambda attr, old, new: so_update())
 
 #### Layouts, Initialization
-protocolSelectw = row(protocolSelect)
-title = row(protocolTitle)
-curdoc().add_root(column(protocolSelectw,title))
+curdoc().add_root(column(protocolSelect,protocolTitle))
 
 #GitHub & StackOverflow
-glayout = column(gmetric,gfig,sizing_mode='scale_width')
+glayout = column(gsection_title,row(gmetric,Spacer(width=300)),gfig)
 
 #Social/Search
-solayout = column(sometric,sofig, sizing_mode='scale_width')
+solayout = column(sosection_title, row(sometric,Spacer(width=300)),sofig)
 
 #Transactions
-tlayout = column(tmetric,tfig, sizing_mode='scale_width')
+tlayout = column(tsection_title, row(tmetric,Spacer(width=300)),tfig)
+
+#All
+hlayout = column(tlayout,row(glayout,solayout))
 
 divs_update()
 g_update()
 so_update()
 t_update()
 
-curdoc().add_root(glayout)
-curdoc().add_root(solayout)
-curdoc().add_root(tlayout)
+curdoc().add_root(hlayout)
 
