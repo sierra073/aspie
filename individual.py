@@ -11,6 +11,7 @@ from math import radians
 from bokeh.layouts import row, column, widgetbox
 from initialize_data import *
 import psycopg2
+from functools import partial
 
 #### Variables
 
@@ -39,6 +40,31 @@ protocols_list = list(protocols['protocol'])
 #### Set up widgets, figures, static titles
 protocolSelect = Select(title="Select a protocol:", value='Ethereum', options=protocols_list)
 protocolTitle = Div(text=div_style + '<div class="sans-font"><h1></h1></div>')
+Algorithm = Div(text=div_style + '<div class="sans-font"><h3>Algorithm</h3></div>')  
+Algorithmv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                   
+BlockNumber =  Div(text=div_style + '<div class="sans-font"><h3>Block Number</h3></div>')    
+BlockNumberv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                
+BlockReward =  Div(text=div_style + '<div class="sans-font"><h3>Block Reward</h3></div>')   
+BlockRewardv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                                
+NetHashesPerSecond = Div(text=div_style + '<div class="sans-font"><h3>Net Hashes per Second</h3></div>')  
+NetHashesPerSecondv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                   
+ProofType = Div(text=div_style + '<div class="sans-font"><h3>Proof Type</h3></div>')      
+ProofTypev = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                       
+TotalCoinsMined = Div(text=div_style + '<div class="sans-font"><h3>Total Coins Mined</h3></div>')  
+TotalCoinsMinedv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                            
+NumberofExchanges = Div(text=div_style + '<div class="sans-font"><h3>Number of Exchanges</h3></div>') 
+NumberofExchangesv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                         
+AdditionalSocialData = Div(text=div_style + '<div class="sans-font"><h3>Additional Social Data</h3></div>')
+
+asosource = ColumnDataSource(dict(twitter_statuses=[],reddit_posts_per_day=[],reddit_comments_per_day=[],facebook_likes=[]))
+asocolumns = [
+        TableColumn(field="twitter_statuses", title="Twitter Statuses"),
+        TableColumn(field="reddit_posts_per_day", title="Reddit Posts per Day"),
+        TableColumn(field="reddit_comments_per_day", title="Reddit Comments per Day"),
+        TableColumn(field="facebook_likes", title="Facebook Likes")
+    ]
+asostats = DataTable(source=asosource, columns=asocolumns, fit_columns=True, row_headers=False, width=540, height=100)
+           
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
 gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
 sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
@@ -75,6 +101,66 @@ def get_hdata(tablename, col):
         data.columns = ['protocol','date','value','color']
 
     return data
+
+def extract_asodata(protocol):
+    id = protocols[protocols.protocol==protocol].id_cc.item()
+
+    if str(id) != 'nan':
+        url = 'https://www.cryptocompare.com/api/data/socialstats/?id=' + str(int(id))
+        r = requests.get(url,headers=REQUEST_HEADERS)
+        alldata = json.loads(r.content)
+
+        if len(alldata['Data']['Twitter']) > 1:
+            socialdata = pd.Series(alldata['Data']['Twitter']['statuses'], index=['twitter_statuses'])
+        else: 
+            socialdata = pd.Series(0, index=['twitter_statuses'])
+        if len(alldata['Data']['Reddit']) > 2:
+            socialdata['reddit_posts_per_day'] = alldata['Data']['Reddit']['posts_per_day']
+            socialdata['reddit_comments_per_day'] = alldata['Data']['Reddit']['comments_per_day']
+        else:
+            socialdata['reddit_posts_per_day'] = 0
+            socialdata['reddit_comments_per_day'] = 0     
+        if len(alldata['Data']['Facebook']) > 1:
+            socialdata['facebook_likes'] = alldata['Data']['Facebook']['likes']
+        else:
+            socialdata['facebook_likes'] = 0
+        return pd.DataFrame(socialdata).transpose()
+
+    return pd.DataFrame([])
+
+def extract_alldata(protocol):
+    symbol = protocols[protocols.protocol==protocol].ticker_cc.item()
+
+    if str(symbol) != 'nan':
+        if symbol == 'MKR' or symbol == 'FIL' or symbol == 'RDN*':
+            url = 'https://www.cryptocompare.com/api/data/coinsnapshot/?fsym='+ symbol + '&tsym=USDT'
+        else:
+            url = 'https://www.cryptocompare.com/api/data/coinsnapshot/?fsym='+ symbol + '&tsym=USD'
+
+        r = requests.get(url,headers=REQUEST_HEADERS)
+        alldata = json.loads(r.content)
+        alldata = pd.DataFrame(alldata)
+
+        alldata = alldata['Data']
+        alldata['nExchanges'] = len(alldata.loc['Exchanges'])
+        alldata = pd.DataFrame(alldata).transpose()
+
+        if 'Algorithm' not in alldata.columns:
+            alldata['Algorithm'] = None
+        if 'BlockNumber' not in alldata.columns:
+            alldata['BlockNumber'] = 0
+        if 'BlockReward' not in alldata.columns:
+            alldata['BlockReward'] = 0
+        if 'NetHashesPerSecond' not in alldata.columns:
+            alldata['NetHashesPerSecond'] = 0
+        if 'ProofType' not in alldata.columns:
+            alldata['ProofType'] = None
+        if 'TotalCoinsMined' not in alldata.columns:
+            alldata['TotalCoinsMined'] = 0
+
+        return alldata
+
+    return pd.DataFrame([])
 
 def build_figure(figname,type):
     f=figure(x_axis_type='datetime',plot_width=600, plot_height=320, 
@@ -136,10 +222,35 @@ def build_line(fig,source_data,type):
 
 #### Updates
 
-def divs_update():
+def title_update():
     protocolTitle.text=div_style + '<div class="sans-font"><h1>' + protocolSelect.value +'</h1></div>'
-    
-protocolSelect.on_change('value', lambda attr, old, new: divs_update())
+
+def divs_update():
+    #curdoc().hold()
+    new_asodata = extract_asodata(protocolSelect.value)
+    if (not new_asodata.empty):
+        asosource.data=asosource.from_df(new_asodata)
+    else:
+        asosource.data = dict(twitter_statuses=[],reddit_posts_per_day=[],reddit_comments_per_day=[],facebook_likes=[])
+
+    new_alldata = extract_alldata(protocolSelect.value)
+    if (not new_alldata.empty):
+        Algorithmv.text = div_style + '<div class="sans-font"><p>' + str(new_alldata['Algorithm'].item()) +'</p></div>'
+        BlockNumberv.text = div_style + '<div class="sans-font"><p>' + str(int(new_alldata['BlockNumber'])) +'</p></div>'
+        BlockRewardv.text = div_style + '<div class="sans-font"><p>' + str(int(new_alldata['BlockReward'])) +'</p></div>'
+        NetHashesPerSecondv.text = div_style + '<div class="sans-font"><p>' + str(int(new_alldata['NetHashesPerSecond'])) +'</p></div>'
+        ProofTypev.text = div_style + '<div class="sans-font"><p>' + str(new_alldata['ProofType'].item()) +'</p></div>'
+        TotalCoinsMinedv.text = div_style + '<div class="sans-font"><p>' + str(int(new_alldata['TotalCoinsMined'])) +'</p></div>'
+        NumberofExchangesv.text = div_style + '<div class="sans-font"><p>' + str(int(new_alldata['nExchanges'])) +'</p></div>'
+    else:
+        Algorithmv.text = div_style + '<div class="sans-font"><p></p></div>'
+        BlockNumberv.text = div_style + '<div class="sans-font"><p></p></div>'
+        BlockRewardv.text = div_style + '<div class="sans-font"><p></p></div>'
+        NetHashesPerSecondv.text = div_style + '<div class="sans-font"><p></p></div>'
+        ProofTypev.text = div_style + '<div class="sans-font"><p></p></div>'
+        TotalCoinsMinedv.text = div_style + '<div class="sans-font"><p></p></div>'
+        NumberofExchangesv.text = div_style + '<div class="sans-font"><p></p></div>'
+    #curdoc().unhold()
 
 def t_update():
     if tmetric.value == 'Total Volume':
@@ -151,13 +262,13 @@ def t_update():
 
     data = get_hdata('market_cap_volume', col)
 
-    tfig = build_figure(tmetric.value,2)
-    build_line(tfig,data,2)
+    if not data.empty:
+        tfig = build_figure(tmetric.value,2)
+        build_line(tfig,data,2)
+    else: 
+        tfig = build_figure(tmetric.value,2)
 
     tlayout.children[2] = row(tfig) #will change
-
-protocolSelect.on_change('value', lambda attr, old, new: t_update())
-tmetric.on_change('value', lambda attr, old, new: t_update())
 
 def g_update():
     if gmetric.value == 'Commits':
@@ -175,7 +286,7 @@ def g_update():
     glayout.children[2] = row(gfig) #will change
 
 
-protocolSelect.on_change('value', lambda attr, old, new: g_update())
+protocolSelect.on_change('value', partial(lambda attr, old, new: g_update()))
 gmetric.on_change('value', lambda attr, old, new: g_update())
 
 def so_update():
@@ -197,7 +308,16 @@ def so_update():
 
     solayout.children[2] = row(sofig) #will change
 
-protocolSelect.on_change('value', lambda attr, old, new: so_update())
+#### On change
+curdoc().hold()
+protocolSelect.on_change('value', partial(lambda attr, old, new: title_update()))
+protocolSelect.on_change('value', partial(lambda attr, old, new: divs_update()))
+protocolSelect.on_change('value', partial(lambda attr, old, new: g_update()))
+protocolSelect.on_change('value', partial(lambda attr, old, new: t_update()))
+protocolSelect.on_change('value', partial(lambda attr, old, new: so_update()))
+curdoc().unhold()
+gmetric.on_change('value', lambda attr, old, new: so_update())
+tmetric.on_change('value', lambda attr, old, new: t_update())
 sometric.on_change('value', lambda attr, old, new: so_update())
 
 #### Layouts, Initialization
@@ -205,20 +325,35 @@ curdoc().add_root(column(protocolSelect,protocolTitle))
 
 #GitHub & StackOverflow
 glayout = column(gsection_title,row(gmetric,Spacer(width=300)),gfig)
-
 #Social/Search
 solayout = column(sosection_title, row(sometric,Spacer(width=300)),sofig)
 
 #Transactions
 tlayout = column(tsection_title, row(tmetric,Spacer(width=300)),tfig)
 
-#All
-hlayout = column(tlayout,row(glayout,solayout))
+#Divs
+alayout = column(Algorithm, Algorithmv)                                                  
+blnlayout = column(BlockNumber, BlockNumberv)                                       
+blrlayout = column(BlockReward, BlockRewardv)                                                            
+nhlayout = column(NetHashesPerSecond, NetHashesPerSecondv)                              
+prlayout = column(ProofType, ProofTypev)                                   
+tclayout = column(TotalCoinsMined, TotalCoinsMinedv)                               
+nelayout = column(NumberofExchanges, NumberofExchangesv) 
 
+dlayout1 = row(alayout,prlayout,blnlayout,blrlayout)
+dlayout2 = row(nhlayout,tclayout,nelayout)
+dlayout3 = column(AdditionalSocialData,asostats)
+dlayout = column(dlayout1,dlayout2,dlayout3)
+
+#All
+layout = column(row(tlayout,dlayout),row(glayout,solayout))             
+
+title_update()
 divs_update()
 g_update()
 so_update()
 t_update()
 
-curdoc().add_root(hlayout)
+#curdoc().add_periodic_callback(price_update, 2000)
+curdoc().add_root(layout)
 
