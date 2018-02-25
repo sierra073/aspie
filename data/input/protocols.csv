@@ -1,18 +1,18 @@
-﻿protocol,color,ticker_symbol,ticker_cc,github_repos,subreddits,stackoverflow,twitter,search
-Bitcoin,#FFB900,BTC,BTC,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[Bitcoin],[bitcoin]
-Ethereum,#515C6B,ETH,ETH,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereumproject],[ethereum]
-Maker,#038387,MKR,MKR,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr, maker]"
-Raiblocks,#107C10,NANO,XRB,[clemahieu/raiblocks],"[RaiBlocks, nanocurrency]","[raiblocks, nano]","[raiblocks, NanoCurrency]","[raiblocks, nano]"
-Dfinity,#847545,,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity],[dfinity]
-Filecoin,#DA3B01,FIL,FIL,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]",[MineFilecoin],"[ipfs, filecoin]"
-Monero,#E81123,XMR,XMR,[monero-project/monero],[Monero],[monero],[monerocurrency],[monero]
-Urbit,#4C4A48,,,[urbit/urbit],[urbit],[urbit],[urbit],[urbit]
-Raiden,#744DA9,RDN,RDN*,[raiden-network/raiden],[raidennetwork],[raiden],[raiden_network],[raiden]
-Tezos,#9A0089,,,[tezos/tezos],[tezos],[tezos],[TezosFoundation],[tezos]
-Tether,#0099BC,USDT,USDT,[None],[Tether],[tether],[Tether_to],[tether]
-Sia,#0078D7,,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]",[MySiacoin],"[sia, siacoin]"
-Storj,#0063B1,,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storjproject],[storj]
-MaidSafe,#00CC6A,,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe],[maidsafe]
-Bitcoin Cash,#FF8C00,BCH,BCH,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
-Plasma,#69797E,,,[None],[None],[None],[EthereumPlasma],[plasma]
-Stellar,#F64C72,XLM,XLM,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar]
+﻿protocol,color,ticker_symbol,ticker_cc,id_cc,github_repos,subreddits,stackoverflow,twitter,search
+Bitcoin,#FFB900,BTC,BTC,1182,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[Bitcoin],[bitcoin]
+Ethereum,#515C6B,ETH,ETH,7605,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereumproject],[ethereum]
+Maker,#038387,MKR,MKR,41192,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr, maker]"
+Raiblocks,#107C10,NANO,XRB,172091,[clemahieu/raiblocks],"[RaiBlocks, nanocurrency]","[raiblocks, nano]","[raiblocks, NanoCurrency]","[raiblocks, nano]"
+Dfinity,#847545,,,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity],[dfinity]
+Filecoin,#DA3B01,FIL,FIL,213663,[ipfs/ipfs],"[ipfs, filecoin]","[ipfs, filecoin]",[MineFilecoin],"[ipfs, filecoin]"
+Monero,#E81123,XMR,XMR,5038,[monero-project/monero],[Monero],[monero],[monerocurrency],[monero]
+Urbit,#4C4A48,,,,[urbit/urbit],[urbit],[urbit],[urbit],[urbit]
+Raiden,#744DA9,RDN,RDN*,372369,[raiden-network/raiden],[raidennetwork],[raiden],[raiden_network],[raiden]
+Tezos,#9A0089,,,,[tezos/tezos],[tezos],[tezos],[TezosFoundation],[tezos]
+Tether,#0099BC,USDT,USDT,171986,[None],[Tether],[tether],[Tether_to],[tether]
+Sia,#0078D7,,,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]",[MySiacoin],"[sia, siacoin]"
+Storj,#0063B1,,,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storjproject],[storj]
+MaidSafe,#00CC6A,,,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe],[maidsafe]
+Bitcoin Cash,#FF8C00,BCH,BCH,202330,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
+Plasma,#69797E,,,,[None],[None],[None],[EthereumPlasma],[plasma]
+Stellar,#F64C72,XLM,XLM,4614,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar]
