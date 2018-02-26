@@ -1,5 +1,5 @@
 from bokeh.io import curdoc
-from bokeh.models import ColumnDataSource, DatetimeTickFormatter, NumeralTickFormatter 
+from bokeh.models import ColumnDataSource, DatetimeTickFormatter, NumeralTickFormatter, NumberFormatter
 from bokeh.models.callbacks import CustomJS
 from bokeh.models.tools import HoverTool, BoxZoomTool, WheelZoomTool, PanTool, ResetTool, SaveTool
 from bokeh.models.widgets import Div, DataTable, TableColumn, Select, CheckboxGroup, DateRangeSlider
@@ -188,7 +188,7 @@ searchinterest = get_data('search_interest')
 hackernews_stories = get_data('hackernews_stories')
 
 # import PreText data (static table)
-reddit_posts_total = reddit_posts[['protocol','count']].groupby(['protocol']).sum().reset_index()
+reddit_posts_total = reddit_posts[['protocol','count']].groupby(['protocol']).mean().reset_index()
 
 reddit_subscribers_total = reddit_subscribers[reddit_subscribers['date'] == datetime.now().date()]
 twitter_followers_total = twitter_followers[twitter_followers['date'] == datetime.now().date()]
@@ -214,9 +214,10 @@ lines_dict_search = dict.fromkeys(keys)
 lines_dict_hackernews = dict.fromkeys(keys)
 
 #set up widgets
+hfmt = NumberFormatter(format="0.0")
 socolumns = [
         TableColumn(field="Protocol",title="Protocol"),
-        TableColumn(field="Reddit Posts",title="Reddit Posts"),
+        TableColumn(field="Reddit Posts",title="Reddit Posts",formatter=hfmt),
         TableColumn(field="Reddit Subscribers",title="Reddit Subscribers"),
         TableColumn(field="Twitter Followers",title="Twitter Followers")
     ]

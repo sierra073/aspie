@@ -40,6 +40,8 @@ protocols_list = list(protocols['protocol'])
 #### Set up widgets, figures, static titles
 protocolSelect = Select(title="Select a protocol:", value='Ethereum', options=protocols_list)
 protocolTitle = Div(text=div_style + '<div class="sans-font"><h1></h1></div>')
+Price = Div(text=div_style + '<div class="sans-font"><h3>Price (USD)</h3></div>')  
+Pricev = Div(text=div_style + '<div class="sans-font"><p></p></div>')     
 Algorithm = Div(text=div_style + '<div class="sans-font"><h3>Algorithm</h3></div>')  
 Algorithmv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                   
 BlockNumber =  Div(text=div_style + '<div class="sans-font"><h3>Block Number</h3></div>')    
@@ -56,10 +58,9 @@ NumberofExchanges = Div(text=div_style + '<div class="sans-font"><h3>Number of E
 NumberofExchangesv = Div(text=div_style + '<div class="sans-font"><p></p></div>')                                                         
 AdditionalSocialData = Div(text=div_style + '<div class="sans-font"><h3>Additional Social Data</h3></div>')
 
-asosource = ColumnDataSource(dict(twitter_statuses=[],reddit_posts_per_day=[],reddit_comments_per_day=[],facebook_likes=[]))
+asosource = ColumnDataSource(dict(twitter_statuses=[],reddit_comments_per_day=[],facebook_likes=[]))
 asocolumns = [
         TableColumn(field="twitter_statuses", title="Twitter Statuses"),
-        TableColumn(field="reddit_posts_per_day", title="Reddit Posts per Day"),
         TableColumn(field="reddit_comments_per_day", title="Reddit Comments per Day"),
         TableColumn(field="facebook_likes", title="Facebook Likes")
     ]
@@ -102,6 +103,14 @@ def get_hdata(tablename, col):
 
     return data
 
+def get_price_data(protocol):
+    cur.execute('''select close from (select *, row_number() over (partition by protocol order by date desc) as row_number from market_cap_volume) as rows where row_number = 1 and protocol = '%s';''' %(protocol))
+    names = [x[0] for x in cur.description]
+    rows = cur.fetchall()
+    data = pd.DataFrame(rows, columns=names)
+
+    return data
+
 def extract_asodata(protocol):
     id = protocols[protocols.protocol==protocol].id_cc.item()
 
@@ -115,10 +124,8 @@ def extract_asodata(protocol):
         else: 
             socialdata = pd.Series(0, index=['twitter_statuses'])
         if len(alldata['Data']['Reddit']) > 2:
-            socialdata['reddit_posts_per_day'] = alldata['Data']['Reddit']['posts_per_day']
             socialdata['reddit_comments_per_day'] = alldata['Data']['Reddit']['comments_per_day']
         else:
-            socialdata['reddit_posts_per_day'] = 0
             socialdata['reddit_comments_per_day'] = 0     
         if len(alldata['Data']['Facebook']) > 1:
             socialdata['facebook_likes'] = alldata['Data']['Facebook']['likes']
@@ -226,12 +233,11 @@ def title_update():
     protocolTitle.text=div_style + '<div class="sans-font"><h1>' + protocolSelect.value +'</h1></div>'
 
 def divs_update():
-    #curdoc().hold()
     new_asodata = extract_asodata(protocolSelect.value)
     if (not new_asodata.empty):
         asosource.data=asosource.from_df(new_asodata)
     else:
-        asosource.data = dict(twitter_statuses=[],reddit_posts_per_day=[],reddit_comments_per_day=[],facebook_likes=[])
+        asosource.data = dict(twitter_statuses=[],reddit_comments_per_day=[],facebook_likes=[])
 
     new_alldata = extract_alldata(protocolSelect.value)
     if (not new_alldata.empty):
@@ -250,7 +256,14 @@ def divs_update():
         ProofTypev.text = div_style + '<div class="sans-font"><p></p></div>'
         TotalCoinsMinedv.text = div_style + '<div class="sans-font"><p></p></div>'
         NumberofExchangesv.text = div_style + '<div class="sans-font"><p></p></div>'
-    #curdoc().unhold()
+
+def price_update():
+    new_price = get_price_data(protocolSelect.value)
+    print new_price
+    if (not new_price.empty):
+        Pricev.text = div_style + '<div class="sans-font"><p>$' + str(new_price['close'].item()) +'</p></div>'
+    else:
+        Pricev.text = div_style + '<div class="sans-font"><p></p></div>'
 
 def t_update():
     if tmetric.value == 'Total Volume':
@@ -285,10 +298,6 @@ def g_update():
 
     glayout.children[2] = row(gfig) #will change
 
-
-protocolSelect.on_change('value', partial(lambda attr, old, new: g_update()))
-gmetric.on_change('value', lambda attr, old, new: g_update())
-
 def so_update():
     if sometric.value == 'Reddit Posts':
         tablename = 'reddit_posts'
@@ -310,13 +319,14 @@ def so_update():
 
 #### On change
 curdoc().hold()
-protocolSelect.on_change('value', partial(lambda attr, old, new: title_update()))
-protocolSelect.on_change('value', partial(lambda attr, old, new: divs_update()))
-protocolSelect.on_change('value', partial(lambda attr, old, new: g_update()))
-protocolSelect.on_change('value', partial(lambda attr, old, new: t_update()))
-protocolSelect.on_change('value', partial(lambda attr, old, new: so_update()))
+protocolSelect.on_change('value', lambda attr, old, new: title_update())
+protocolSelect.on_change('value', lambda attr, old, new: divs_update())
+protocolSelect.on_change('value', lambda attr, old, new: price_update())
+protocolSelect.on_change('value', lambda attr, old, new: g_update())
+protocolSelect.on_change('value', lambda attr, old, new: t_update())
+protocolSelect.on_change('value', lambda attr, old, new: so_update())
 curdoc().unhold()
-gmetric.on_change('value', lambda attr, old, new: so_update())
+gmetric.on_change('value', lambda attr, old, new: g_update())
 tmetric.on_change('value', lambda attr, old, new: t_update())
 sometric.on_change('value', lambda attr, old, new: so_update())
 
@@ -327,11 +337,11 @@ curdoc().add_root(column(protocolSelect,protocolTitle))
 glayout = column(gsection_title,row(gmetric,Spacer(width=300)),gfig)
 #Social/Search
 solayout = column(sosection_title, row(sometric,Spacer(width=300)),sofig)
-
 #Transactions
 tlayout = column(tsection_title, row(tmetric,Spacer(width=300)),tfig)
 
 #Divs
+playout = column(Price, Pricev)  
 alayout = column(Algorithm, Algorithmv)                                                  
 blnlayout = column(BlockNumber, BlockNumberv)                                       
 blrlayout = column(BlockReward, BlockRewardv)                                                            
@@ -340,7 +350,7 @@ prlayout = column(ProofType, ProofTypev)
 tclayout = column(TotalCoinsMined, TotalCoinsMinedv)                               
 nelayout = column(NumberofExchanges, NumberofExchangesv) 
 
-dlayout1 = row(alayout,prlayout,blnlayout,blrlayout)
+dlayout1 = column(playout,row(alayout,prlayout,blnlayout,blrlayout))
 dlayout2 = row(nhlayout,tclayout,nelayout)
 dlayout3 = column(AdditionalSocialData,asostats)
 dlayout = column(dlayout1,dlayout2,dlayout3)
@@ -350,6 +360,7 @@ layout = column(row(tlayout,dlayout),row(glayout,solayout))
 
 title_update()
 divs_update()
+price_update()
 g_update()
 so_update()
 t_update()
