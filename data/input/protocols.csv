@@ -16,4 +16,4 @@ MaidSafe,#00CC6A,,,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maids
 Bitcoin Cash,#FF8C00,BCH,BCH,202330,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
 Plasma,#69797E,,,,[None],[None],[None],[EthereumPlasma],[plasma]
 Stellar,#F64C72,XLM,XLM,4614,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar]
-EOS,#060606,EOS,EOS,4614,[EOSIO/eos],[eos],[eos],[eos_io],[eos]
+EOS,#060606,EOS,EOS,166503,[EOSIO/eos],[eos],[eos],[eos_io],[eos]
