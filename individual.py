@@ -76,7 +76,7 @@ tfig=figure()
 
 gsection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>GitHub and StackOverflow Activity</h3></div>')
 sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>Social Media and Search Activity</h3></div>')
-tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>Historical Transactions</h3></div>')
+tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h3>Marketplace Activity</h3></div>')
 
 #### Helper Functions
 

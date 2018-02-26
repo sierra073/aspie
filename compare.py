@@ -39,8 +39,8 @@ def get_data(name):
         colors = protocols[['protocol','color']]
         data = data.merge(colors,how='inner',on='protocol')
 
-    if name == 'github_stars' or name=='market_cap_volume':
-        data = data[data.protocol!='Bitcoin']
+    # if name == 'github_stars' or name=='market_cap_volume':
+    #     data = data[data.protocol!='Bitcoin']
     if name == 'stackoverflow_questions':
         data = data[['protocol','date','question_count','color']]
     if name != 'market_cap_volume' and name != 'github_data_total':
@@ -230,7 +230,7 @@ sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subs
 ############
 ## Market Cap, Volume, Price (historic)
 ############
-tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Historical Transactions</h2></div>')
+tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Marketplace Activity</h2></div>')
 
 # Data
 market_cap_volume = get_data('market_cap_volume')
