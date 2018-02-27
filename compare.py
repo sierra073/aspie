@@ -195,7 +195,7 @@ twitter_followers_total = twitter_followers[twitter_followers['date'] == datetim
 reddit_data_total = reddit_posts_total.merge(reddit_subscribers_total[['protocol','count']],how='outer',on='protocol')
 social_data_total = reddit_data_total.merge(twitter_followers_total[['protocol','count']],how='outer',on='protocol')
 
-social_data_total.columns = ['Protocol','Reddit Posts','Reddit Subscribers (total)', 'Twitter Followers (total)']
+social_data_total.columns = ['Protocol','Reddit Posts','Reddit Subscribers', 'Twitter Followers']
 social_data_total = social_data_total.fillna("") 
 
 sosource_stats = ColumnDataSource(data=dict())
@@ -217,11 +217,11 @@ lines_dict_hackernews = dict.fromkeys(keys)
 hfmt = NumberFormatter(format="0.0")
 socolumns = [
         TableColumn(field="Protocol",title="Protocol"),
-        TableColumn(field="Reddit Posts",title="Reddit Posts",formatter=hfmt),
+        TableColumn(field="Reddit Posts",title="Reddit Posts (avg per day)",formatter=hfmt),
         TableColumn(field="Reddit Subscribers",title="Reddit Subscribers"),
         TableColumn(field="Twitter Followers",title="Twitter Followers")
     ]
-sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=380, height=685)
+sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=500, height=685)
 
 #controls
 soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
