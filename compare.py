@@ -151,9 +151,9 @@ github_data_total['created_at'] = pd.to_datetime(github_data_total['created_at']
 gsource_stats = ColumnDataSource(data=dict())
 gsource_stats.data = gsource_stats.from_df(github_data_total)
 
-f_commits = build_figure("Commits",1)
+f_commits = build_figure("Commits (per week)",1)
 f_stars = build_figure("Stars",1)
-f_questions = build_figure("Questions",1)
+f_questions = build_figure("StackOverflow Questions",1)
 
 lines_dict_commits = dict.fromkeys(keys)
 lines_dict_stars = dict.fromkeys(keys)
@@ -173,7 +173,7 @@ gstats = DataTable(source=gsource_stats, columns=gcolumns, fit_columns=True, row
 
 #controls
 gprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
-gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
+gmetric = Select(value='Commits (per week)', options=['Commits (per week)', 'Stars', 'StackOverflow Questions'])
 
 ############
 ## Reddit, Twitter, Search, HackerNews
@@ -195,15 +195,15 @@ twitter_followers_total = twitter_followers[twitter_followers['date'] == datetim
 reddit_data_total = reddit_posts_total.merge(reddit_subscribers_total[['protocol','count']],how='outer',on='protocol')
 social_data_total = reddit_data_total.merge(twitter_followers_total[['protocol','count']],how='outer',on='protocol')
 
-social_data_total.columns = ['Protocol','Reddit Posts','Reddit Subscribers', 'Twitter Followers']
+social_data_total.columns = ['Protocol','Reddit Posts','Reddit Subscribers (total)', 'Twitter Followers (total)']
 social_data_total = social_data_total.fillna("") 
 
 sosource_stats = ColumnDataSource(data=dict())
 sosource_stats.data = sosource_stats.from_df(social_data_total)
 
 f_rposts = build_figure("Reddit Posts",1)
-f_rsubs = build_figure("Reddit Subscribers",1)
-f_tfoll = build_figure("Twitter Followers",1)
+f_rsubs = build_figure("Reddit Subscribers (total)",1)
+f_tfoll = build_figure("Twitter Followers (total)",1)
 f_search = build_figure("Search Interest",1)
 f_hackernews = build_figure("HackerNews Stories",1)
 
@@ -225,7 +225,7 @@ sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, 
 
 #controls
 soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
-sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
+sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers (total)', 'Twitter Followers (total)', 'Search Interest', 'HackerNews Stories'])
 
 ############
 ## Market Cap, Volume, Price (historic)
@@ -257,7 +257,7 @@ tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'A
 ####################################
 def add_lines(fig):
     i = 0
-    if fig=='Commits':
+    if fig=='Commits (per week)':
         for l in lines_dict_commits:
             lines_dict_commits[l] = build_line(f_commits,commits,i,1)
             i+=1
@@ -273,11 +273,11 @@ def add_lines(fig):
         for l in lines_dict_rposts:
             lines_dict_rposts[l] = build_line(f_rposts,reddit_posts,i,1)
             i+=1
-    if fig=="Reddit Subscribers":
+    if fig=="Reddit Subscribers (total)":
         for l in lines_dict_rsubs:
             lines_dict_rsubs[l] = build_line(f_rsubs,reddit_subscribers,i,1)
             i+=1
-    if fig=="Twitter Followers":
+    if fig=="Twitter Followers (total)":
         for l in lines_dict_tfoll:
             lines_dict_tfoll[l] = build_line(f_tfoll,twitter_followers,i,1)
             i+=1
@@ -306,7 +306,7 @@ def g_lineupdate():
     #get the select value
     gfig = gmetric.value
 
-    if gfig=='Commits':
+    if gfig=='Commits (per week)':
         for l in lines_dict_commits:
             l1 = lines_dict_commits[l]
             if l1 != None:
@@ -335,13 +335,13 @@ def so_lineupdate():
             if l4 != None:
                 l4.visible = i in soprotocolSelect.active
             i+=1
-    if sofig=='Reddit Subscribers':
+    if sofig=='Reddit Subscribers (total)':
         for l in lines_dict_rsubs:
             l5 = lines_dict_rsubs[l]
             if l5!= None:
                 l5.visible = i in soprotocolSelect.active
             i+=1
-    if sofig=='Twitter Followers':
+    if sofig=='Twitter Followers (total)':
         for l in lines_dict_tfoll:
             l6 = lines_dict_tfoll[l]
             if l6!= None:
@@ -395,8 +395,8 @@ def g_selectCallback():
         add_lines('Stars')
         glayout.children[1].children[0].children[1].children[1] = row(f_stars)
         g_lineupdate()
-    if gmetric.value=='Commits':
-        add_lines('Commits')
+    if gmetric.value=='Commits (per week)':
+        add_lines('Commits (per week)')
         glayout.children[1].children[0].children[1].children[1] = row(f_commits)
         g_lineupdate()
     if gmetric.value=='StackOverflow Questions':
@@ -409,12 +409,12 @@ def so_selectCallback():
         add_lines('Reddit Posts')
         solayout.children[1].children[0].children[1].children[1] = row(f_rposts)
         so_lineupdate()
-    if sometric.value=='Reddit Subscribers':
-        add_lines('Reddit Subscribers')
+    if sometric.value=='Reddit Subscribers (total)':
+        add_lines('Reddit Subscribers (total)')
         solayout.children[1].children[0].children[1].children[1] = row(f_rsubs)
         so_lineupdate()
-    if sometric.value=='Twitter Followers':
-        add_lines('Twitter Followers')
+    if sometric.value=='Twitter Followers (total)':
+        add_lines('Twitter Followers (total)')
         solayout.children[1].children[0].children[1].children[1] = row(f_tfoll)
         so_lineupdate()
     if sometric.value=='Search Interest':
@@ -473,7 +473,7 @@ tmain_elements = row(tmain_col)
 tlayout = column(tsection_title,tmain_elements, sizing_mode='scale_width')
 
 # initialize
-add_lines('Commits')
+add_lines('Commits (per week)')
 add_lines('Search Interest')
 add_lines('Total Volume')
 g_lineupdate()

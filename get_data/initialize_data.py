@@ -5,6 +5,7 @@ from urlparse2 import urlparse
 import time
 import re
 import psycopg2
+from datetime import datetime
 
 # variables
 REQUEST_HEADERS =  {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -119,6 +120,7 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
         li = [['protocol'], [date_col], count_col]
         counts_by_day.columns = [item for sublist in li for item in sublist]
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col],infer_datetime_format=True).dt.date
+
         #aggregate
         if sum==True:
             counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).sum()).reset_index()
@@ -126,10 +128,12 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
             counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).size()).reset_index()
         else:
             counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).mean()).round(0).reset_index()
+
         #rename/format columns again
         li = [['protocol'], [date_col], count_col]
         counts_by_day.columns = [item for sublist in li for item in sublist]
         data[date_col] = pd.to_datetime(data[date_col],infer_datetime_format=True)
+
         # sort current data and remove latest date
         if allow_multiple_days==True:
             data['date_rank'] = data.sort_values(['protocol',date_col],ascending=False).groupby(['protocol']).cumcount() + 1
@@ -142,6 +146,7 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
                 data = data[data.date_rank > 1]
                 data = data.drop(['date_rank'],axis=1)
                 data = data.reset_index(drop=True)
+
         # append new data and reformat. be overly certain to remove index column and drop any duplicates
         counts_by_day = data.append(counts_by_day,ignore_index=True)
         counts_by_day[date_col] = pd.to_datetime(counts_by_day[date_col])
@@ -150,11 +155,32 @@ def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,all
         counts_by_day = counts_by_day.drop_duplicates()
         counts_by_day = counts_by_day.drop(['index'],axis=1)
         counts_by_day = pd.DataFrame(counts_by_day.groupby(['protocol',date_col]).max()).reset_index()
+
+        # fill in 0s for missing dates
+        if (tablename =='github_stars' or tablename == 'reddit_posts'):
+            counts_by_day_final = pd.DataFrame([])
+            for index, row in protocols.iterrows():
+                counts_sub = counts_by_day[counts_by_day.protocol==row['protocol']]
+                if not counts_sub.empty:
+                    idx = pd.period_range(min(counts_sub[date_col]), datetime.now()).to_timestamp()
+                    counts_sub = counts_sub.set_index(date_col)
+                    counts_sub = counts_sub.reindex(index = idx)
+                    counts_sub['protocol'] = counts_sub['protocol'].fillna(value=row['protocol'])
+                    counts_sub[count_col] = counts_sub[count_col].fillna(value=0)
+                    counts_sub = counts_sub.reset_index()
+                    counts_by_day_final = counts_by_day_final.append(counts_sub)
+            counts_by_day_final = counts_by_day_final.rename(columns={'index':date_col})
+            cols = counts_by_day_final.columns.tolist()
+            cols[0], cols[1] = cols[1], cols[0]
+            counts_by_day_final = counts_by_day_final[cols]
+        else:
+            counts_by_day_final = counts_by_day
+
         # ensure each protocol is listed
-        result_protocols = pd.DataFrame(counts_by_day.groupby('protocol').size()).reset_index()
+        result_protocols = pd.DataFrame(counts_by_day_final.groupby('protocol').size()).reset_index()
         for index, row in protocols.iterrows():
             if not (result_protocols['protocol'].str.contains(row['protocol']).any()):
-                counts_by_day = counts_by_day.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
+                counts_by_day_final = counts_by_day_final.merge(pd.DataFrame({'protocol':row['protocol']},index=[0]),on = 'protocol',how = 'outer')
 
         # export to Postgres
-        insert_db(counts_by_day,tablename)
+        insert_db(counts_by_day_final,tablename)

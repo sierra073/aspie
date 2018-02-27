@@ -67,8 +67,8 @@ asocolumns = [
 asostats = DataTable(source=asosource, columns=asocolumns, fit_columns=True, row_headers=False, width=540, height=100)
            
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
-gmetric = Select(value='Commits', options=['Commits', 'Stars', 'StackOverflow Questions'])
-sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers', 'Twitter Followers', 'Search Interest', 'HackerNews Stories'])
+gmetric = Select(value='Commits (per week)', options=['Commits (per week)', 'Stars', 'StackOverflow Questions'])
+sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subscribers (total)', 'Twitter Followers (total)', 'Search Interest', 'HackerNews Stories'])
 
 gfig=figure()
 sofig=figure()
@@ -283,7 +283,7 @@ def t_update():
     tlayout.children[2] = row(tfig) #will change
 
 def g_update():
-    if gmetric.value == 'Commits':
+    if gmetric.value == 'Commits (per week)':
         tablename = 'github_commits'
     if gmetric.value == 'Stars':
         tablename = 'github_stars'
@@ -300,9 +300,9 @@ def g_update():
 def so_update():
     if sometric.value == 'Reddit Posts':
         tablename = 'reddit_posts'
-    if sometric.value == 'Reddit Subscribers':
+    if sometric.value == 'Reddit Subscribers (total)':
         tablename = 'reddit_subscribers'
-    if sometric.value == 'Twitter Followers':
+    if sometric.value == 'Twitter Followers (total)':
         tablename = 'twitter_followers'
     if sometric.value == 'Search Interest':
         tablename = 'search_interest'
