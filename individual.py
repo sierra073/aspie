@@ -259,7 +259,6 @@ def divs_update():
 
 def price_update():
     new_price = get_price_data(protocolSelect.value)
-    print new_price
     if (not new_price.empty):
         Pricev.text = div_style + '<div class="sans-font"><p>$' + str(new_price['close'].item()) +'</p></div>'
     else:
@@ -309,7 +308,6 @@ def so_update():
         tablename = 'search_interest'
     if sometric.value == 'HackerNews Stories':
         tablename = 'hackernews_stories'
-
     data = get_hdata(tablename, "")
 
     sofig = build_figure(sometric.value,1)
@@ -319,12 +317,12 @@ def so_update():
 
 #### On change
 curdoc().hold()
-protocolSelect.on_change('value', lambda attr, old, new: title_update())
-protocolSelect.on_change('value', lambda attr, old, new: divs_update())
-protocolSelect.on_change('value', lambda attr, old, new: price_update())
 protocolSelect.on_change('value', lambda attr, old, new: g_update())
 protocolSelect.on_change('value', lambda attr, old, new: t_update())
 protocolSelect.on_change('value', lambda attr, old, new: so_update())
+protocolSelect.on_change('value', lambda attr, old, new: title_update())
+protocolSelect.on_change('value', lambda attr, old, new: divs_update())
+protocolSelect.on_change('value', lambda attr, old, new: price_update())
 curdoc().unhold()
 gmetric.on_change('value', lambda attr, old, new: g_update())
 tmetric.on_change('value', lambda attr, old, new: t_update())
@@ -367,4 +365,5 @@ t_update()
 
 #curdoc().add_periodic_callback(price_update, 2000)
 curdoc().add_root(layout)
+curdoc().title = "Individual Protocols"
 

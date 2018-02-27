@@ -483,3 +483,4 @@ t_lineupdate()
 curdoc().add_root(glayout)
 curdoc().add_root(solayout)
 curdoc().add_root(tlayout)
+curdoc().title = "Compare Protocols"
