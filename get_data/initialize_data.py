@@ -56,7 +56,10 @@ def insert_db(df,tablename):
     conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
     cur = conn.cursor()
     #empty the table
-    cur.execute('delete from ' + tablename + ';')
+    if tablename != 'reddit_posts':
+        cur.execute('delete from ' + tablename + ';')
+    else:
+        cur.execute('''delete from ''' + tablename + ''' where protocol != 'Bitcoin';''')
 
     columns_list = df.columns.values.tolist()
     columns = ', '.join(map(str, columns_list))

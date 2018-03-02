@@ -71,4 +71,35 @@ def get_subscribers(u,d):
 	return(subscribers_dt)
 	
 api_wrapper_append(reddit_subs,get_subscribers,'Reddit',"https://reddit.com/r/","/about.json",'date',['subscriber_count'],True,False,'reddit_subscribers')
+
+def get_posts_bitcoin():
+	id = protocols[protocols.protocol=='Bitcoin'].id_cc.item()
+
+	url = 'https://www.cryptocompare.com/api/data/socialstats/?id=' + str(int(id))
+	r = requests.get(url,headers=REQUEST_HEADERS)
+	alldata = json.loads(r.content)
+
+	if len(alldata['Data']['Reddit']) > 2:
+		reddit_posts_per_day = alldata['Data']['Reddit']['posts_per_day']
+	else:
+		reddit_posts_per_day = 0
+
+	conn = psycopg2.connect( host=HOST, user=USER, password=PASSWORD, dbname=DB , port=5432)
+	cur = conn.cursor()
+
+	cur.execute('''delete from reddit_posts where date = current_date and protocol = 'Bitcoin';''')
+
+	if reddit_posts_per_day > 0:
+		cur.execute('''insert into reddit_posts values ('Bitcoin',current_date,''' + reddit_posts_per_day + ''');''')
+	else:
+		cur.execute('''insert into reddit_posts select protocol, current_date as date, post_count from reddit_posts where date = current_date - 1 and protocol = 'Bitcoin';''')
+
+	print("data inserted")
+
+	cur.close()
+	conn.commit()
+	conn.close()
+
+get_posts_bitcoin()
+
 print("done")
