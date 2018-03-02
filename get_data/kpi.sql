@@ -3,7 +3,7 @@ hnd.date,
 COALESCE(commit_count,0) AS commit_count,
 COALESCE(star_count,0) AS star_count,
 COALESCE(question_count,0) AS stack_question_count,
-COALESCE(CASE WHEN base.protocol = 'Bitcoin' AND hnd.date <= '2018-03-01' THEN apc.post_count ELSE rp.post_count end,0) AS reddit_post_count,
+COALESCE(CASE WHEN base.protocol = 'Bitcoin' AND hnd.date < '2018-03-01' THEN apc.post_count ELSE rp.post_count end,0) AS reddit_post_count,
 COALESCE(rsubc.subscriber_count - rsubp.subscriber_count,0) AS reddit_subscriber_count,
 COALESCE(tfc.follower_count - tfp.follower_count,0) AS twitter_follower_count,
 COALESCE(story_count,0) AS hackernews_count,
@@ -63,10 +63,11 @@ ON base.protocol = rp.protocol
 AND hnd.date = rp.date
 
 LEFT JOIN (
-SELECT avg(post_count) AS post_count
+SELECT protocol, avg(post_count) AS post_count
 FROM reddit_posts
-WHERE protocol = 'Bitcoin') apc
-ON base.protocol = rp.protocol
+WHERE protocol = 'Bitcoin'
+GROUP BY 1) apc
+ON base.protocol = apc.protocol
 
 LEFT JOIN reddit_subscribers rsubp
 ON base.protocol = rsubp.protocol
