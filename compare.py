@@ -1,8 +1,8 @@
 from bokeh.io import curdoc
-from bokeh.models import ColumnDataSource, DatetimeTickFormatter, NumeralTickFormatter, NumberFormatter
+from bokeh.models import ColumnDataSource, DatetimeTickFormatter, NumeralTickFormatter, NumberFormatter, ranges, LabelSet
 from bokeh.models.callbacks import CustomJS
 from bokeh.models.tools import HoverTool, BoxZoomTool, WheelZoomTool, PanTool, ResetTool, SaveTool
-from bokeh.models.widgets import Div, DataTable, TableColumn, Select, CheckboxGroup, DateRangeSlider
+from bokeh.models.widgets import Div, DataTable, TableColumn, Select, CheckboxGroup, Panel, Tabs
 from bokeh.layouts import layout
 from bokeh.plotting import figure
 from datetime import datetime, date
@@ -39,12 +39,36 @@ def get_data(name):
         colors = protocols[['protocol','color']]
         data = data.merge(colors,how='inner',on='protocol')
 
-    # if name == 'github_stars' or name=='market_cap_volume':
-    #     data = data[data.protocol!='Bitcoin']
     if name == 'stackoverflow_questions':
         data = data[['protocol','date','question_count','color']]
     if name != 'market_cap_volume' and name != 'github_data_total':
         data.columns = ['protocol','date','count','color']
+    return data
+
+def get_kpi_hist(score):
+    cur.execute('select protocol, date, ' + score + ' from protocols_kpi_hist;')
+    names = [x[0] for x in cur.description]
+    rows = cur.fetchall()
+    data = pd.DataFrame(rows, columns=names)
+
+    colors = protocols[['protocol','color']]
+    data = data.merge(colors,how='inner',on='protocol')
+    data.columns = ['protocol','date','count','color']
+    return data
+
+def get_kpi_bar(score):
+    cur.execute('select protocol, ' + score + ' from (select *, row_number() over (partition by protocol order by date desc) as row_number from protocols_kpi_hist) as rows where row_number = 1;')
+    names = [x[0] for x in cur.description]
+    rows = cur.fetchall()
+    data = pd.DataFrame(rows, columns=names)
+
+    colors = protocols[['protocol','color']]
+    data = data.merge(colors,how='inner',on='protocol')
+    if score=='kpi':
+        data[score] = data[score].astype(float).round(2)
+    else:
+        data[score] = data[score].astype(float).round(0)
+
     return data
 
 # Lists of protocols and tickers
@@ -54,22 +78,27 @@ protocols_ticker = [k for k in protocols_ticker if 'nan' not in str(k)]
 
 #dictionary to store time series lines
 keys = ["l" + str(i) for i in range(0,len(protocols_list))]
-tkeys = ["l" + str(i) for i in range(0,len(protocols_ticker))]
 
 #create figures
 def build_figure(figname,type):
-    f=figure(x_axis_type='datetime',plot_width=800, plot_height=500, 
+    if type==3:
+        w=970
+    else:
+        w=800
+    f=figure(x_axis_type='datetime',plot_width=w, plot_height=500, 
         background_fill_color = "grey", background_fill_alpha = .1, 
         title = figname, name = figname, 
         tools=['box_zoom','wheel_zoom','pan','reset','save'], active_scroll='wheel_zoom', active_drag='pan', toolbar_location=None)
-    f.title.text_font = "verdana"
     f.xaxis.axis_label = "Date"
     if type==1:
         f.yaxis.axis_label = "Count"
         f.left[0].formatter.use_scientific = False
-    else:
+    elif type==2:
         f.yaxis.axis_label = "Value"
         f.yaxis.formatter = NumeralTickFormatter(format='($ 0.00 a)')
+    else:
+        f.yaxis.axis_label = "Score"
+        f.left[0].formatter.use_scientific = False
     f.xaxis.major_label_orientation=radians(90)
     f.min_border_right = 55
     f.min_border_bottom = 0
@@ -84,7 +113,7 @@ def build_line(fig,source_data,n,type):
     if d.shape[0] > 1 and str(d['date'].iloc[0]) != 'nan':
         #construct line
         d['date'] = pd.to_datetime(d['date'])
-        if type==1:
+        if type==1 or type==3:
             source_sub = ColumnDataSource(
                 data = dict(
                 protocol=d['protocol'],
@@ -110,7 +139,7 @@ def build_line(fig,source_data,n,type):
         fig.legend.background_fill_alpha = 0.015  
         leg = protocols_list[n]
         # add line 
-        if type==1:
+        if type==1 or type==3:
             val = fig.line('date', 'count', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
         else:
             val = fig.line('date', 'value', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
@@ -119,14 +148,48 @@ def build_line(fig,source_data,n,type):
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
                 tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')],
                 mode = "vline"))
-        else:
+        elif type==2:
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
                 tooltips=[('Name', name),('Date', '@date_formatted'),("Value", "@value{'$ 0.00 a'}")],
+                mode = "vline"))
+        else:
+            fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
+                tooltips=[('Name', name),('Date', '@date_formatted'),('Score', '@count')],
                 mode = "vline"))
         
         return val
     else:
         return None
+
+def build_bar(score,col,source):
+    x_label = "Protocol"
+    y_label = score
+    title = "Comparison (today): " + score
+    if score != "Activity Score":
+        rangepre = ranges.Range1d(start=0,end=125)
+    else:
+        rangepre = ranges.Range1d(start=0,end=100)
+    plot = figure(plot_width=1120, plot_height=500, tools="save",
+            background_fill_color = "grey", background_fill_alpha = .1, 
+            x_axis_label = x_label,
+            y_axis_label = y_label,
+            title=title,
+            x_range = source.data["protocol"],
+            y_range= rangepre)
+
+    plot.min_border_bottom = 50
+    plot.left[0].formatter.use_scientific = False
+    if score != "Activity Score":
+        plot.vbar(x='protocol',top=col,bottom=0,width=0.5,color='#5DA5DA',source=source)
+        labels = LabelSet(x='protocol', y=col, text=col, level='glyph',
+            x_offset=-13, y_offset=0.5, source=source, render_mode='canvas',text_font='arial',text_font_size='8.5pt')
+    else:
+        plot.vbar(x='protocol',top=col,bottom=0,width=0.5,color='#FAA43A',source=source)
+        labels = LabelSet(x='protocol', y=col, text=col, level='glyph',
+            x_offset=-6, y_offset=0.5, source=source, render_mode='canvas',text_font='arial',text_font_size='8.5pt')
+
+    plot.add_layout(labels)
+    return plot
 
 ############
 ## GitHub, StackOverflow
@@ -147,10 +210,10 @@ github_data_total = github_data_total.fillna('')
 github_data_total['created_at'] = pd.to_datetime(github_data_total['created_at']).apply(lambda d: d.strftime('%Y-%m-%d'))
 
 #create ColumnDataSources
-#source = ColumnDataSource(data=dict(protocol=[], date=[], count=[], color=[]))
 gsource_stats = ColumnDataSource(data=dict())
 gsource_stats.data = gsource_stats.from_df(github_data_total)
 
+#Figures
 f_commits = build_figure("Commits (per week)",1)
 f_stars = build_figure("Stars",1)
 f_questions = build_figure("StackOverflow Questions",1)
@@ -201,6 +264,7 @@ social_data_total = social_data_total.fillna("")
 sosource_stats = ColumnDataSource(data=dict())
 sosource_stats.data = sosource_stats.from_df(social_data_total)
 
+#Figures
 f_rposts = build_figure("Reddit Posts",1)
 f_rsubs = build_figure("Reddit Subscribers (total)",1)
 f_tfoll = build_figure("Twitter Followers (total)",1)
@@ -240,6 +304,7 @@ averageprice = market_cap_volume[['protocol','date','average','color']]
 for d in [volume,marketcap,averageprice]:
     d.columns = ['protocol','date','value','color']
 
+#Figures
 f_volume = build_figure("Total Volume",2)
 f_marketcap = build_figure("Market Cap",2)
 f_averageprice = build_figure("Average Daily Price",2)
@@ -251,6 +316,43 @@ lines_dict_averageprice = dict.fromkeys(keys)
 #controls
 tprotocolSelect = CheckboxGroup(labels=protocols_list, active=[2,3,6,16], width=100)
 tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
+
+############
+## Comparison KPIs
+############
+ksection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Comparison KPIs</h2></div>')
+#get data
+ksource_kpi = ColumnDataSource(get_kpi_bar('kpi'))
+ksource_act = ColumnDataSource(get_kpi_bar('activity_score'))
+kpi_hist = get_kpi_hist('kpi')
+activity_hist = get_kpi_hist('activity_score')
+
+#Bar charts
+kpi_bar = build_bar("Price/Activity Score",'kpi',ksource_kpi)
+activity_bar = build_bar("Activity Score",'activity_score',ksource_act)
+
+#History line charts
+f_kpi_hist = build_figure("Price/Activity Score Over Time",3)
+f_activity_hist = build_figure("Activity Score Over Time",3)
+lines_dict_kpi = dict.fromkeys(keys)
+lines_dict_activity = dict.fromkeys(keys)
+
+j=k=0
+for l in lines_dict_kpi:
+    lines_dict_kpi[l] = build_line(f_kpi_hist,kpi_hist,j,3)
+    j+=1
+for l in lines_dict_activity:
+    lines_dict_activity[l] = build_line(f_activity_hist,activity_hist,k,3)
+    k+=1
+
+#Tabs
+ktab1 = Panel(child=kpi_bar, title="Price/Activity Score KPI")
+ktab2 = Panel(child=f_kpi_hist, title="Price/Activity Score KPI Over Time")
+ktab3 = Panel(child=activity_bar, title="Activity Score")
+ktab4 = Panel(child=f_activity_hist, title="Activity Score Over Time")
+
+ktabs = Tabs(tabs=[ ktab1, ktab2, ktab3, ktab4])
+
 
 ####################################
 ## Updates
@@ -480,6 +582,8 @@ g_lineupdate()
 so_lineupdate()
 t_lineupdate()
 
+curdoc().add_root(ksection_title)
+curdoc().add_root(ktabs)
 curdoc().add_root(glayout)
 curdoc().add_root(solayout)
 curdoc().add_root(tlayout)
