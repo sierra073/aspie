@@ -11,6 +11,12 @@ from bokeh.layouts import row, column, widgetbox
 from initialize_data import *
 import psycopg2
 import numpy as np
+import tkinter
+
+# width of screen
+root = tkinter.Tk()
+screen_width = root.winfo_screenwidth()
+p1_width = int(0.85*screen_width)
 
 HOST = '159.89.155.200'
 USER = 'sbbw'
@@ -111,8 +117,8 @@ def build_figure(figname,type):
     if type==3:
         w=970
     else:
-        w=800
-    f=figure(x_axis_type='datetime',plot_width=w, plot_height=500, 
+        w=p1_width
+    f=figure(x_axis_type='datetime', plot_width=w,
         background_fill_color = "grey", background_fill_alpha = .1, 
         title = figname, name = figname, 
         tools=['box_zoom','wheel_zoom','pan','reset'], active_scroll='wheel_zoom', active_drag='box_zoom', toolbar_location='below')
@@ -127,7 +133,7 @@ def build_figure(figname,type):
         f.yaxis.axis_label = "Score"
         f.left[0].formatter.use_scientific = False
     f.xaxis.major_label_orientation=radians(90)
-    f.min_border_right = 55
+    f.min_border_right = 25
     f.min_border_bottom = 0
     return f
 
@@ -219,7 +225,7 @@ def build_bar(score,col,source):
             x_range = source.data["protocol"],
             y_range= rangepre)
 
-    plot.min_border_bottom = 50
+    plot.min_border_bottom = 120
     plot.left[0].formatter.use_scientific = False
     if score != "Activity Score":
         plot.vbar(x='protocol',top=col,bottom=0,width=0.5,color='#5DA5DA',source=source)
@@ -261,12 +267,12 @@ f_commits_t = f_commits
 # fcr = Panel(child=f_commits, title="Raw Data")
 # fct = Panel(child=f_commits_t, title="Trend")
 # f_commits_final = Tabs(tabs=[ fct, fcr])
-f_stars = build_figure("Stars (trend)",1)
+f_stars = build_figure("Stars per day (trend)",1)
 f_stars_t = f_stars
 # fsr = Panel(child=f_stars, title="Raw Data")
 # fst = Panel(child=f_stars_t, title="Trend")
 # f_stars_final = Tabs(tabs=[ fst, fsr])
-f_questions = build_figure("StackOverflow Questions (trend)",1)
+f_questions = build_figure("StackOverflow Questions per day (trend)",1)
 f_questions_t = f_questions
 # fqr = Panel(child=f_questions, title="Raw Data")
 # fqt = Panel(child=f_questions_t, title="Trend")
@@ -290,12 +296,12 @@ gstats = DataTable(source=gsource_stats, columns=gcolumns, fit_columns=True, row
 
 #controls
 gprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
-gmetric = Select(value='Commits (per week)', options=['Commits (per week)', 'Stars', 'StackOverflow Questions'])
+gmetric = Select(value='Commits (per week)', options=['Commits (per week)', 'Stars (per day)', 'StackOverflow Questions (per day)'])
 
 ############
 ## Reddit, Twitter, Search, HackerNews
 ############
-sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Social Media and Search Activity</h2></div>')
+sosection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Social Media and Search Activity (per day)</h2></div>')
 
 # Data
 reddit_posts = get_data('reddit_posts')
@@ -348,7 +354,7 @@ sometric = Select(value='Search Interest', options=['Reddit Posts', 'Reddit Subs
 ############
 ## Market Cap, Volume, Price (historic)
 ############
-tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Marketplace Activity</h2></div>')
+tsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>Marketplace Activity (per day)</h2></div>')
 
 # Data
 market_cap_volume = get_data('market_cap_volume')
@@ -368,8 +374,8 @@ lines_dict_marketcap = dict.fromkeys(keys)
 lines_dict_averageprice = dict.fromkeys(keys)
 
 #controls
-tprotocolSelect = CheckboxGroup(labels=protocols_list, active=[2,3,6,16], width=100)
-tmetric = Select(value='Total Volume', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
+tprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,2,3,6,16], width=100)
+tmetric = Select(value='Market Cap', options=['Total Volume', 'Market Cap', 'Average Daily Price'])
 
 ############
 ## Comparison KPIs
@@ -418,12 +424,12 @@ def add_lines(fig):
             #lines_dict_commits[l] = build_line(f_commits,commits,i,1)
             lines_dict_commits_t[l] = build_line(f_commits_t,commits,i,4)
             i+=1
-    if fig=="Stars":
+    if fig=="Stars (per day)":
         for l in lines_dict_stars_t:
             #lines_dict_stars[l] = build_line(f_stars,stars,i,1)
             lines_dict_stars_t[l] = build_line(f_stars_t,stars,i,4)
             i+=1
-    if fig=="StackOverflow Questions":
+    if fig=="StackOverflow Questions (per day)":
         for l in lines_dict_questions_t:
             #lines_dict_questions[l] = build_line(f_questions,questions,i,1)
             lines_dict_questions_t[l] = build_line(f_questions_t,questions,i,4)
@@ -471,13 +477,13 @@ def g_lineupdate():
             if l1t != None:
                 l1t.visible = i in gprotocolSelect.active
             i+=1
-    if gfig=='Stars':
+    if gfig=='Stars (per day)':
         for l in lines_dict_stars_t:
             l2t = lines_dict_stars_t[l]
             if l2t != None:
                 l2t.visible = i in gprotocolSelect.active
             i+=1
-    if gfig=='StackOverflow Questions':
+    if gfig=='StackOverflow Questions (per day)':
         for l in lines_dict_questions_t:
             l3t = lines_dict_questions_t[l]
             if l3t != None:
@@ -550,53 +556,53 @@ tprotocolSelect.on_change('active', lambda attr, old, new: t_lineupdate())
 # Callback which either adds or removes a plot depending on what metric is selected
 def g_selectCallback():
     # Either add or remove the second graph
-    if  gmetric.value=='Stars':
-        add_lines('Stars')
-        glayout.children[1].children[0].children[1].children[1] = f_stars_t
+    if  gmetric.value=='Stars (per day)':
+        add_lines('Stars (per day)')
+        glayout.children[1].children[1] = f_stars_t
         g_lineupdate()
     if gmetric.value=='Commits (per week)':
         add_lines('Commits (per week)')
-        glayout.children[1].children[0].children[1].children[1] = f_commits_t
+        glayout.children[1].children[1] = f_commits_t
         g_lineupdate()
-    if gmetric.value=='StackOverflow Questions':
-        add_lines('StackOverflow Questions')
-        glayout.children[1].children[0].children[1].children[1] = f_questions_t
+    if gmetric.value=='StackOverflow Questions (per day)':
+        add_lines('StackOverflow Questions (per day)')
+        glayout.children[1].children[1] = f_questions_t
         g_lineupdate()
 def so_selectCallback():
     # Either add or remove the second graph
     if sometric.value=='Reddit Posts':
         add_lines('Reddit Posts')
-        solayout.children[1].children[0].children[1].children[1] = row(f_rposts)
+        solayout.children[1].children[1] = row(f_rposts)
         so_lineupdate()
     if sometric.value=='Reddit Subscribers (total)':
         add_lines('Reddit Subscribers (total)')
-        solayout.children[1].children[0].children[1].children[1] = row(f_rsubs)
+        solayout.children[1].children[1] = row(f_rsubs)
         so_lineupdate()
     if sometric.value=='Twitter Followers (total)':
         add_lines('Twitter Followers (total)')
-        solayout.children[1].children[0].children[1].children[1] = row(f_tfoll)
+        solayout.children[1].children[1] = row(f_tfoll)
         so_lineupdate()
     if sometric.value=='Search Interest':
         add_lines('Search Interest')
-        solayout.children[1].children[0].children[1].children[1] = row(f_search)
+        solayout.children[1].children[1] = row(f_search)
         so_lineupdate()
     if sometric.value=='HackerNews Stories':
         add_lines('HackerNews Stories')
-        solayout.children[1].children[0].children[1].children[1] = row(f_hackernews)
+        solayout.children[1].children[1] = row(f_hackernews)
         so_lineupdate()
 def t_selectCallback():
     # Either add or remove the second graph
     if  tmetric.value=='Total Volume':
         add_lines('Total Volume')
-        tlayout.children[1].children[0].children[1].children[1] = row(f_volume)
+        tlayout.children[1].children[1] = row(f_volume)
         t_lineupdate()
     if tmetric.value=='Market Cap':
         add_lines('Market Cap')
-        tlayout.children[1].children[0].children[1].children[1] = row(f_marketcap)
+        tlayout.children[1].children[1] = row(f_marketcap)
         t_lineupdate()
     if tmetric.value=='Average Daily Price':
         add_lines('Average Daily Price')
-        tlayout.children[1].children[0].children[1].children[1] = row(f_averageprice)
+        tlayout.children[1].children[1] = row(f_averageprice)
         t_lineupdate()
 
 # Update select controls
@@ -609,39 +615,41 @@ tmetric.on_change('value', lambda attr, old, new: t_selectCallback())
 ####################################
 #GitHub & StackOverflow
 glinesSelect = row(gprotocolSelect)
-gfig = f_commits_t
+gfig = row(f_commits_t)
 gfig_final = column(gmetric,gfig)
 gmain_col = row(glinesSelect,gfig_final)
-gmain_elements = row(gmain_col, gstats)
-glayout = column(gsection_title, gmain_elements, sizing_mode = 'scale_width')
+glayout = gmain_col
 
 #Social/Search
 solinesSelect = row(soprotocolSelect)
 sofig = row(f_search)
 sofig_final = column(sometric,sofig)
 somain_col = row(solinesSelect,sofig_final)
-somain_elements = row(somain_col, sostats)
-solayout = column(sosection_title,somain_elements, sizing_mode='scale_width')
+solayout = somain_col
 
 #Transactions
 tlinesSelect = row(tprotocolSelect)
-tfig = row(f_volume)
+tfig = row(f_marketcap)
 tfig_final = column(tmetric,tfig)
 tmain_col = row(tlinesSelect,tfig_final)
-tmain_elements = row(tmain_col)
-tlayout = column(tsection_title,tmain_elements, sizing_mode='scale_width')
+tlayout = tmain_col
 
 # initialize
 add_lines('Commits (per week)')
 add_lines('Search Interest')
-add_lines('Total Volume')
+add_lines('Market Cap')
 g_lineupdate()
 so_lineupdate()
 t_lineupdate()
 
 curdoc().add_root(ksection_title)
 curdoc().add_root(ktabs)
+curdoc().add_root(gsection_title)
 curdoc().add_root(glayout)
+curdoc().add_root(gstats)
+curdoc().add_root(sosection_title)
 curdoc().add_root(solayout)
+curdoc().add_root(sostats)
+curdoc().add_root(tsection_title)
 curdoc().add_root(tlayout)
 curdoc().title = "Compare Protocols"
