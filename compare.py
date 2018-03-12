@@ -10,6 +10,7 @@ from math import radians
 from bokeh.layouts import row, column, widgetbox
 from initialize_data import *
 import psycopg2
+import numpy as np
 
 HOST = '159.89.155.200'
 USER = 'sbbw'
@@ -29,6 +30,28 @@ div_style = """
 ####################################
 ## Helper Functions
 ####################################
+def get_trend(data,name):
+    trends = pd.Series([])
+    for index, row in protocols.iterrows():
+        data_sub = data[data.protocol==row['protocol']]
+        d = np.asarray(data_sub['count'])
+
+        if name=='stackoverflow_questions':
+            window = len(d) if (len(d)) % 2 != 0 else (len(d)) + 1
+        else:
+            window = len(d)/2 if (len(d)/2) % 2 != 0 else (len(d)/2) + 1
+
+        if window > 1 and (d.astype(bool).sum(axis=0)) > 2:
+            if name=='stackoverflow_questions':
+                data_sub['trend'] = savitzky_golay(d, window, 1)
+            else:
+                data_sub['trend'] = savitzky_golay(d, window, 3)
+        else:
+            data_sub['trend'] = 0
+        trends = trends.append(data_sub['trend'])
+
+    return trends
+
 def get_data(name):
     cur.execute('select * from ' + name +';')
     names = [x[0] for x in cur.description]
@@ -38,11 +61,17 @@ def get_data(name):
     if name != 'github_data_total':
         colors = protocols[['protocol','color']]
         data = data.merge(colors,how='inner',on='protocol')
+        if 'date' in data.columns:
+            data = data.sort_values(['protocol','date'])
 
     if name == 'stackoverflow_questions':
         data = data[['protocol','date','question_count','color']]
     if name != 'market_cap_volume' and name != 'github_data_total':
         data.columns = ['protocol','date','count','color']
+
+    if name == 'github_commits' or name == 'github_stars' or name == 'stackoverflow_questions':
+        data['trend'] = get_trend(data,name)
+
     return data
 
 def get_kpi_hist(score):
@@ -73,8 +102,6 @@ def get_kpi_bar(score):
 
 # Lists of protocols and tickers
 protocols_list = list(protocols['protocol'])
-protocols_ticker = list(protocols['ticker_symbol'])
-protocols_ticker = [k for k in protocols_ticker if 'nan' not in str(k)]
 
 #dictionary to store time series lines
 keys = ["l" + str(i) for i in range(0,len(protocols_list))]
@@ -88,7 +115,7 @@ def build_figure(figname,type):
     f=figure(x_axis_type='datetime',plot_width=w, plot_height=500, 
         background_fill_color = "grey", background_fill_alpha = .1, 
         title = figname, name = figname, 
-        tools=['box_zoom','wheel_zoom','pan','reset','save'], active_scroll='wheel_zoom', active_drag='pan', toolbar_location=None)
+        tools=['box_zoom','wheel_zoom','pan','reset'], active_scroll='wheel_zoom', active_drag='box_zoom', toolbar_location='below')
     f.xaxis.axis_label = "Date"
     if type==1:
         f.yaxis.axis_label = "Count"
@@ -122,6 +149,15 @@ def build_line(fig,source_data,n,type):
                 color=d['color'],
                 date_formatted = d['date'].apply(lambda d: d.strftime('%Y-%m-%d'))
             ))
+        elif type==4:
+            source_sub = ColumnDataSource(
+                data = dict(
+                protocol=d['protocol'],
+                date=d['date'],
+                trend=d['trend'],
+                color=d['color'],
+                date_formatted = d['date'].apply(lambda d: d.strftime('%Y-%m-%d'))
+            ))
         else:
             source_sub = ColumnDataSource(
                 data = dict(
@@ -141,21 +177,27 @@ def build_line(fig,source_data,n,type):
         # add line 
         if type==1 or type==3:
             val = fig.line('date', 'count', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
+        elif type==4:
+            val = fig.line('date', 'trend', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
         else:
             val = fig.line('date', 'value', source=source_sub, line_color=source_sub.data['color'].iloc[0], legend=leg, line_width=2, line_alpha=0.7)
         #set Hover
         if type==1:
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
                 tooltips=[('Name', name),('Date', '@date_formatted'),('Count', '@count')],
-                mode = "vline"))
+                mode = "vline",toggleable=False))
         elif type==2:
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
                 tooltips=[('Name', name),('Date', '@date_formatted'),("Value", "@value{'$ 0.00 a'}")],
-                mode = "vline"))
+                mode = "vline",toggleable=False))
+        elif type==4:
+            fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
+                tooltips=[('Name', name),('Date', '@date_formatted'),('Count(trend)', '@trend')],
+                mode = "vline",toggleable=False))
         else:
             fig.add_tools(HoverTool(renderers=[val],  show_arrow=True, point_policy='follow_mouse',  
                 tooltips=[('Name', name),('Date', '@date_formatted'),('Score', '@count')],
-                mode = "vline"))
+                mode = "vline",toggleable=False))
         
         return val
     else:
@@ -214,13 +256,25 @@ gsource_stats = ColumnDataSource(data=dict())
 gsource_stats.data = gsource_stats.from_df(github_data_total)
 
 #Figures
-f_commits = build_figure("Commits (per week)",1)
-f_stars = build_figure("Stars",1)
-f_questions = build_figure("StackOverflow Questions",1)
+f_commits = build_figure("Commits per week (trend)",1)
+f_commits_t = f_commits
+# fcr = Panel(child=f_commits, title="Raw Data")
+# fct = Panel(child=f_commits_t, title="Trend")
+# f_commits_final = Tabs(tabs=[ fct, fcr])
+f_stars = build_figure("Stars (trend)",1)
+f_stars_t = f_stars
+# fsr = Panel(child=f_stars, title="Raw Data")
+# fst = Panel(child=f_stars_t, title="Trend")
+# f_stars_final = Tabs(tabs=[ fst, fsr])
+f_questions = build_figure("StackOverflow Questions (trend)",1)
+f_questions_t = f_questions
+# fqr = Panel(child=f_questions, title="Raw Data")
+# fqt = Panel(child=f_questions_t, title="Trend")
+# f_questions_final = Tabs(tabs=[ fqt, fqr])
 
-lines_dict_commits = dict.fromkeys(keys)
-lines_dict_stars = dict.fromkeys(keys)
-lines_dict_questions = dict.fromkeys(keys)
+lines_dict_commits = lines_dict_commits_t = dict.fromkeys(keys)
+lines_dict_stars = lines_dict_stars_t = dict.fromkeys(keys)
+lines_dict_questions = lines_dict_questions_t = dict.fromkeys(keys)
 
 #set up widgets
 gsection_title = Div(text=div_style + '<div class="sans-font">' + '<h2>GitHub and StackOverflow Activity</h2></div>')
@@ -360,16 +414,19 @@ ktabs = Tabs(tabs=[ ktab1, ktab2, ktab3, ktab4])
 def add_lines(fig):
     i = 0
     if fig=='Commits (per week)':
-        for l in lines_dict_commits:
-            lines_dict_commits[l] = build_line(f_commits,commits,i,1)
+        for l in lines_dict_commits_t:
+            #lines_dict_commits[l] = build_line(f_commits,commits,i,1)
+            lines_dict_commits_t[l] = build_line(f_commits_t,commits,i,4)
             i+=1
     if fig=="Stars":
-        for l in lines_dict_stars:
-            lines_dict_stars[l] = build_line(f_stars,stars,i,1)
+        for l in lines_dict_stars_t:
+            #lines_dict_stars[l] = build_line(f_stars,stars,i,1)
+            lines_dict_stars_t[l] = build_line(f_stars_t,stars,i,4)
             i+=1
     if fig=="StackOverflow Questions":
-        for l in lines_dict_questions:
-            lines_dict_questions[l] = build_line(f_questions,questions,i,1)
+        for l in lines_dict_questions_t:
+            #lines_dict_questions[l] = build_line(f_questions,questions,i,1)
+            lines_dict_questions_t[l] = build_line(f_questions_t,questions,i,4)
             i+=1
     if fig=="Reddit Posts":
         for l in lines_dict_rposts:
@@ -409,22 +466,22 @@ def g_lineupdate():
     gfig = gmetric.value
 
     if gfig=='Commits (per week)':
-        for l in lines_dict_commits:
-            l1 = lines_dict_commits[l]
-            if l1 != None:
-                l1.visible = i in gprotocolSelect.active
+        for l in lines_dict_commits_t:
+            l1t = lines_dict_commits_t[l]
+            if l1t != None:
+                l1t.visible = i in gprotocolSelect.active
             i+=1
     if gfig=='Stars':
-        for l in lines_dict_stars:
-            l2 = lines_dict_stars[l]
-            if l2 != None:
-                l2.visible = i in gprotocolSelect.active
+        for l in lines_dict_stars_t:
+            l2t = lines_dict_stars_t[l]
+            if l2t != None:
+                l2t.visible = i in gprotocolSelect.active
             i+=1
     if gfig=='StackOverflow Questions':
-        for l in lines_dict_questions:
-            l3 = lines_dict_questions[l]
-            if l3 != None:
-                l3.visible = i in gprotocolSelect.active
+        for l in lines_dict_questions_t:
+            l3t = lines_dict_questions_t[l]
+            if l3t != None:
+                l3t.visible = i in gprotocolSelect.active
             i+=1
 def so_lineupdate():
     i = 0
@@ -495,15 +552,15 @@ def g_selectCallback():
     # Either add or remove the second graph
     if  gmetric.value=='Stars':
         add_lines('Stars')
-        glayout.children[1].children[0].children[1].children[1] = row(f_stars)
+        glayout.children[1].children[0].children[1].children[1] = f_stars_t
         g_lineupdate()
     if gmetric.value=='Commits (per week)':
         add_lines('Commits (per week)')
-        glayout.children[1].children[0].children[1].children[1] = row(f_commits)
+        glayout.children[1].children[0].children[1].children[1] = f_commits_t
         g_lineupdate()
     if gmetric.value=='StackOverflow Questions':
         add_lines('StackOverflow Questions')
-        glayout.children[1].children[0].children[1].children[1] = row(f_questions)
+        glayout.children[1].children[0].children[1].children[1] = f_questions_t
         g_lineupdate()
 def so_selectCallback():
     # Either add or remove the second graph
@@ -552,11 +609,11 @@ tmetric.on_change('value', lambda attr, old, new: t_selectCallback())
 ####################################
 #GitHub & StackOverflow
 glinesSelect = row(gprotocolSelect)
-gfig = row(f_commits)
+gfig = f_commits_t
 gfig_final = column(gmetric,gfig)
 gmain_col = row(glinesSelect,gfig_final)
 gmain_elements = row(gmain_col, gstats)
-glayout = column(gsection_title, gmain_elements, sizing_mode='scale_width')
+glayout = column(gsection_title, gmain_elements, sizing_mode = 'scale_width')
 
 #Social/Search
 solinesSelect = row(soprotocolSelect)
