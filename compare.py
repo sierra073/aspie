@@ -14,9 +14,9 @@ import numpy as np
 import tkinter
 
 # width of screen
-root = tkinter.Tk()
-screen_width = root.winfo_screenwidth()
-p1_width = int(0.85*screen_width)
+# root = tkinter.Tk()
+# screen_width = root.winfo_screenwidth()
+# p1_width = int(0.85*screen_width)
 
 HOST = '159.89.155.200'
 USER = 'sbbw'
@@ -117,7 +117,7 @@ def build_figure(figname,type):
     if type==3:
         w=970
     else:
-        w=p1_width
+        w=1255
     f=figure(x_axis_type='datetime', plot_width=w,
         background_fill_color = "grey", background_fill_alpha = .1, 
         title = figname, name = figname, 
@@ -345,7 +345,7 @@ socolumns = [
         TableColumn(field="Reddit Subscribers",title="Reddit Subscribers"),
         TableColumn(field="Twitter Followers",title="Twitter Followers")
     ]
-sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=500, height=685)
+sostats = DataTable(source=sosource_stats, columns=socolumns, fit_columns=True, row_headers=False, width=540, height=685)
 
 #controls
 soprotocolSelect = CheckboxGroup(labels=protocols_list, active=[0,1,2], width=100)
