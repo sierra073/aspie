@@ -1,6 +1,6 @@
 ﻿protocol,color,ticker_symbol,ticker_cc,id_cc,github_repos,subreddits,stackoverflow,twitter,search
 Bitcoin,#FFB900,BTC,BTC,1182,[bitcoin/bitcoin],[Bitcoin],[bitcoin],[Bitcoin],[bitcoin]
-Ethereum,#515C6B,ETH,ETH,7605,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereumproject],[ethereum]
+Ethereum,#515C6B,ETH,ETH,7605,[ethereum/go-ethereum],[Ethereum],[ethereum],[ethereum],[ethereum]
 Maker,#038387,MKR,MKR,41192,"[makerdao/sai, makerdao/pymaker]",[MakerDAO],"[dai, makerdao, mkr, dai integration]",[MakerDAO],"[dai, makerdao, mkr, maker]"
 Raiblocks,#107C10,NANO,XRB,172091,[clemahieu/raiblocks],"[RaiBlocks, nanocurrency]","[raiblocks, nano]","[raiblocks, NanoCurrency]","[raiblocks, nano]"
 Dfinity,#847545,,,,[dfinity/go-revolver],[dfinity],[dfinity],[dfinity],[dfinity]
