@@ -11,3 +11,8 @@ haxor
 psycopg2
 bokeh
 flask
+numpy
+seaborn
+matplotlib
+sklearn
+

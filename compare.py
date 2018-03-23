@@ -11,7 +11,6 @@ from bokeh.layouts import row, column, widgetbox
 from initialize_data import *
 import psycopg2
 import numpy as np
-import tkinter
 
 # width of screen
 # root = tkinter.Tk()
