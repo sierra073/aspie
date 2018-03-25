@@ -36,45 +36,38 @@ data['p_num'] = data['protocol'].map(lambda s: mymap.get(s) if s in mymap else s
 
 #Columns to add % change to
 cols = ['star_count','reddit_post_count',
-       'reddit_subscriber_count', 'twitter_follower_count','search_count', 'price', 'market_cap',
-       'rel_market_cap','index_price','activity_score']
+       'reddit_subscriber_count', 'twitter_follower_count','search_count', 'price', 'index_price','activity_score']
 data[cols] = data[cols].astype('float')
 
-tdata = add_shift_metrics(data,'regression',cols)
+tdata = add_shift_metrics(data,'classification',cols)
 tdata = convert_floats(tdata)
 
 #train test split -- make it depend on option arg for 'regression' (add if else to lines 76,77,80,81)
 X_train = tdata[tdata.p_num.isin(train_ind)].reset_index(drop=True)
-y_train = X_train['price_chg_next'].values
-X_train = X_train.drop(['p_num','price_chg_next'],axis = 1)
+y_train = X_train['alpha_binary_next'].values
+X_train = X_train.drop(['p_num','alpha_binary_next'],axis = 1)
 
 X_test = tdata[~tdata.p_num.isin(train_ind)].reset_index(drop=True)
-y_test = X_test['price_chg_next'].values
-X_test = X_test.drop(['p_num','price_chg_next'],axis = 1)
+y_test = X_test['alpha_binary_next'].values
+X_test = X_test.drop(['p_num','alpha_binary_next'],axis = 1)
 
 print X_train.shape
 print X_test.shape
 print tdata.shape
 print X_train.columns
 
-#Pipeline - also make depend on option arg
+# corr = tdata.corr()
+# sns.heatmap(corr)
 
-# pipe, params = build_pipe('randomforest','classification',criterion=["gini","entropy"],n_estimators = [80,100], max_depth = [2,3,6,10], class_weight = ['balanced'], max_features = [.33,"sqrt","log2"], n_jobs = [-1], oob_score = [False])
-# grid_rf = GridSearchCV(pipe, params, cv=2, scoring='recall',verbose=2,n_jobs=-1)
-# grid_rf.fit(X_train,y_train)
-# print_score(grid_rf,'classification',X_train,X_test,y_train,y_test)
-# print grid_rf.best_estimator_.steps[0][1]
-
-pipe, params = build_pipe('gradientboosting','regression',n_estimators = [60,100,400], learning_rate = [0.05], max_depth = [3,7,15], max_features = ["sqrt","log2"], warm_start=[True,False])
+pipe, params = build_pipe('gradientboosting','classification',n_estimators = [60,80,100], learning_rate = [0.05], max_depth = [3,7,15], max_features = ["sqrt","log2"], warm_start=[True,False])
 grid_gb = GridSearchCV(pipe, params, cv=2, verbose=1,n_jobs=-1)
 
 grid_gb.fit(X_train,y_train)
-print_score(grid_gb,'regression',X_train,X_test,y_train,y_test)
+print_score(grid_gb,'classification',X_train,X_test,y_train,y_test)
 print_feature_importances(X_train,grid_gb)
 
+print grid_gb.best_estimator_
+
 Xr = append_y(tdata,X_test,grid_gb)
-Xr['absdiff'] = (Xr['price_chg_next'] - Xr['y_pred']).abs()
-print Xr[['absdiff','p_num']].groupby('p_num').mean()
 
-
-
+plot_roc_binary(grid_gb,X_test,y_test)

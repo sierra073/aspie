@@ -10,14 +10,14 @@ COALESCE(story_count,0) AS hackernews_count,
 COALESCE(search_interest,0) AS search_count,
 activity_score,
 COALESCE(close,0) AS price,
-COALESCE(market_cap,0) as market_cap,
-market_cap::decimal/total_market_cap as rel_market_cap,
+-- COALESCE(market_cap,0) as market_cap,
+-- market_cap::decimal/total_market_cap as rel_market_cap,
 COALESCE(cbi.price,0) as index_price
 
 FROM base_protocols base
 
 LEFT JOIN 
-(SELECT DISTINCT DATE FROM market_cap_volume WHERE DATE >= '2018-02-12') hnd
+(SELECT DISTINCT DATE FROM market_cap_volume WHERE DATE >= '2018-02-13') hnd
 ON TRUE
 
 LEFT JOIN github_stars gs
@@ -34,7 +34,7 @@ FROM
 (SELECT base.protocol, hnd.date, week_date, commit_count
 FROM base_protocols base
 LEFT JOIN 
-(SELECT DISTINCT DATE FROM market_cap_volume WHERE DATE >= '2018-02-12') hnd
+(SELECT DISTINCT DATE FROM market_cap_volume WHERE DATE >= '2018-02-13') hnd
 ON TRUE
 LEFT JOIN github_commits gc
 ON base.protocol = gc.protocol
@@ -44,14 +44,14 @@ AND extract(YEAR FROM hnd.date) = extract(YEAR FROM week_date)) gci1
 LEFT JOIN 
 (SELECT protocol, week_date, cast(commit_count AS decimal)/7 AS daily_commit_count
 FROM github_commits
-WHERE week_date >= '2018-02-12') gci2
+WHERE week_date >= '2018-02-13') gci2
 ON gci1.protocol = gci2.protocol
 AND gci1.week_date = gci2.week_date
 
 LEFT JOIN 
 (SELECT protocol, avg(commit_count)/7 AS avg_commit_count
 FROM github_commits
-WHERE week_date >= '2018-02-12'
+WHERE week_date >= '2018-02-13'
 GROUP BY 1) gci3
 ON gci1.protocol = gci3.protocol
 ) gc

@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error, roc_curve, auc
 #Assign protocol number (for train test split)
 global mymap,train_ind
 mymap = {'Bitcoin':1, 'Ethereum':2, 'Bitcoin Cash':3, 'EOS':4, 'Filecoin':5, 'Maker':6, 'Monero':7,'Raiblocks':8,'Raiden':9,'Stellar':10,'Tether':11}
-train_ind = [1,2,5,9,4,10,3,6]
+train_ind = [1,5,9,4,10,3,6]
 
 def get_change(current, previous):
     if current == previous:
@@ -35,23 +35,21 @@ def add_shift_metrics(data,model_type,cols):
         # filter to protocol and index
         data1=data[data.protocol==p].reset_index(drop=True)
         cleandata = data1.set_index('date')
+        cleandata = cleandata.sort_index()
         for col in cols:
             cleandata[col + '_chg'] = np.vectorize(get_change)(cleandata[col],cleandata[col].shift(1))
-            cleandata[col + '_chg2'] = np.vectorize(get_change)(cleandata[col],cleandata[col].shift(2))
-            cleandata[col + '_chg7'] = np.vectorize(get_change)(cleandata[col],cleandata[col].shift(7))
 
         if model_type=='classification':
             cleandata['alpha_binary'] = np.where(cleandata['price_chg'] > cleandata['index_price_chg'], 1, 0)
             cleandata['alpha_binary_next'] = cleandata['alpha_binary'].shift(-1)
+            # cleandata['price_chg_binary'] = np.where(cleandata['price'] > cleandata['price'].shift(1), 1, 0)
+            # cleandata['price_chg_binary_next'] = cleandata['price_chg_binary'].shift(-1)
         else:
             cleandata['price_chg_next'] = cleandata['price_chg'].shift(-1)
-        
         cleandata = cleandata.dropna()
         tdata = tdata.append(cleandata)
-    if model_type=='classification':
-        tdata = tdata.drop(['protocol','keep','twitter_follower_count','reddit_subscriber_count','price','market_cap'],axis=1)
-    else:
-        tdata = tdata.drop(['protocol','keep','twitter_follower_count','reddit_subscriber_count','price','index_price','market_cap','index_price','index_price_chg','index_price_chg2','index_price_chg7'],axis=1)
+
+    tdata = tdata.drop(['protocol','keep','twitter_follower_count','reddit_subscriber_count','price'],axis=1)
 
     return tdata
 
@@ -127,11 +125,10 @@ def plot_roc_binary(grid,X_test,y_test):
 #Append predicted variable to test set to analyze (for regression)
 def append_y(tdata,X_test,grid):
     X=tdata[~tdata.p_num.isin(train_ind)].reset_index(drop=True)
-    X=X[['p_num','price_chg_next']].reset_index(drop=True)
+    X=X[['p_num','alpha_binary_next']].reset_index(drop=True)
     Xr = pd.concat([X_test.reset_index(drop=True),X,pd.Series(grid.predict(X_test)).reset_index(drop=True)],axis=1)
     Xr.columns.values[-1]='y_pred'
-
-    print np.logical_or(np.logical_and((Xr.y_pred > 0),(Xr.price_chg_next < 0)), 
-                        np.logical_and((Xr.y_pred < 0),(Xr.price_chg_next > 0))).sum()
+    # print np.logical_or(np.logical_and((Xr.y_pred > 0),(Xr.price_chg_next < 0)), 
+    #                     np.logical_and((Xr.y_pred < 0),(Xr.price_chg_next > 0))).sum()
 
     return Xr
