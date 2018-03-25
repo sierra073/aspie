@@ -13,7 +13,7 @@ Tether,#0099BC,USDT,USDT,171986,[None],[Tether],[tether],[Tether_to],[tether]
 Sia,#0078D7,,,,[NebulousLabs/Sia],[siacoin],"[sia, siacoin]",[MySiacoin],"[sia, siacoin]"
 Storj,#0063B1,,,,"[Storj/storjshare-gui, Storj/storjshare-daemon]",[storj],[storj],[storjproject],[storj]
 MaidSafe,#00CC6A,,,,[maidsafe/crust],"[maidsafe, safenetwork]",[maidsafe],[maidsafe],[maidsafe]
-Bitcoin Cash,#FF8C00,BCH,BCH,202330,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoin cash, bch]"
+Bitcoin Cash,#FF8C00,BCH,BCH,202330,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bitcoincash, bitcoin cash]",[BITCOlNCASH],"[bitcoincash, bch]"
 Plasma,#69797E,,,,[None],[None],[None],[EthereumPlasma],[plasma]
 Stellar,#F64C72,XLM,XLM,4614,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar]
 EOS,#060606,EOS,EOS,166503,[EOSIO/eos],[eos],[eos],[eos_io],[eos]
