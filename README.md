@@ -56,28 +56,43 @@ bokeh serve individual.py compare.py --port 5100 --num-procs 0 --allow-websocket
 ```
 
 ## Data Collection
-All python scripts to collect the following metrics found in the `get_data/` folder.
+All python scripts to collect the following metrics found in the `get_data/` folder. All data gets populated into PostgreSQL tables.
 ### Social
 #### Reddit posts and subscribers
+* [get_reddit_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_reddit_data.py):
+  * If more than one subreddit is provided for a protocol, all metrics are summed over all subreddits every day
+  * Posts are scraped directly from the _new_ posts for every subreddit, and subscribers are pulled using the [Reddit API](https://www.reddit.com/dev/api/#GET_r_{subreddit}_about) 
+  * Since the Bitcoin reddit is very active and problematic, we track posts per day from [here](https://www.cryptocompare.com/api/data/socialstats/?id=1182)
 #### Twitter followers
+* [get_twitter_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_twitter_data.py):
+  * Number of followers scraped directly from each protocol's twitter page every day. Tracked starting 2018.
 #### Google search interest
+* [get_searchinterest_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_searchinterest_data.py):
+  * Utilizes [pytrends](https://github.com/GeneralMills/pytrends) to get the Google Trends _search interest_ metric (number out of 100) for each search term provided in the input data and averages them for each protocol. Tracked starting 2018.
 #### Hacker News stories
+* [get_hackernews_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_hackernews_data.py):
+  * Utilizes the [haxor](https://github.com/avinassh/haxor) package to pull the top 200 Hacker News stories and count the number of times each protocol name is mentioned in a story title. Tracked starting 2018.
 ### Development
 #### GitHub
-* Stars are tracked on a daily basis since the repo(s)'s creation date using
-* Total forks
-* Commits are only available at a weekly basis for the last 12 months, hence why the data starts end of January 2017
-  * 'Total commits' thus truly means all commits since January 2017 or since the first repo was created if after January 2017 (except for some protocols tracked after January 2018)
+* Utilizes the [GitHub API](https://developer.github.com/v3/) directly
+* If more than one repo is provided for a protocol, all metrics are summed over all repos
+* Stars ([get_github_stars.py](https://github.com/sierra073/aspie/blob/master/get_data/get_github_stars.py)) are tracked on a daily basis since the repo(s)'s earliest creation date
+* Commits ([get_github_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_github_data.py)) are only available at a _weekly basis_ for the last 12 months, hence why the data starts end of January 2017
+  * _"Total commits"_ thus truly means all commits since January 2017 or since the first repo was created if after January 2017 (except for some protocols tracked after January 2018)
 #### StackOverflow
-* Utilizes StackAPI
-* StackOverflow questions are counted since January 2017. Questions are aggregated by protocol by searching for those that contain the term(s) specified in our input data in their title OR for those tagged as the term(s). Thus, it's possible for questions to be double counted if the term is contained in the question title AND question tag, but highly unlikely based on the data observed.
+* [get_stackoverflow_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_stackoverflow_data.py):
+  * Utilizes [StackAPI](http://stackapi.readthedocs.io/en/latest/)
+  * Questions are counted since January 2017. Questions are aggregated by protocol by searching for those that contain the term(s) specified in our input data in their title OR for those tagged as the term(s). Thus, it's possible for questions to be double counted if the term is contained in the question title AND question tag, but highly unlikely based on the data observed.
 ### Marketplace
 #### CoinMarketCap
+* Tracked since January 2017.
 #### Coinbase Index Fund
+* Tracked since January 2015.
 ### Aggregated and Other Metrics
 #### Activity Score
 #### CryptoCompare
 #### Ethereum address count
+* CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
 ### Sentiment Analysis
 
 ## Predictive Model--under development
