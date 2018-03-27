@@ -96,10 +96,10 @@ All python scripts to collect the following metrics found in the `get_data/` fol
 * [kpi.py](https://github.com/sierra073/aspie/blob/master/get_data/kpi.py) and [kpi.sql](https://github.com/sierra073/aspie/blob/master/get_data/kpi.sql):
   * Aggregates all Social and Development data into a single score between 0 and 100 - computed daily since 2/12/18 when all data was avaiable. **Very much a heuristic.**
     * Overall explanation: 
-      * Each metric is transformed into a *percentile rank* (among all protocols) for that day. Reddit and Twitter followers are represented as the *change in followers from the previous day*.
+      * Each metric is transformed into a *percentile rank* (among all protocols) for that day. Reddit and twitter followers are represented as the *change in followers from the previous day*.
       * The score is an average of 3 components which are themselves averages (and multiplied by 100): (1) Social Score, an average of the reddit post rank, reddit subscriber rank, twitter follower rank and Hacker News rank; (2) Developer Score, an average of the GitHub commit count rank, GitHub star count rank and StackOverflow question count rank; (3) Search Score which is just the [Google Trends search interest metric](#google-search-interest) for the day.
     * Patching and exceptions: 
-      * Since GitHub commits are only available weekly, we compute the daily value as the average of the weekly value for the week the current day falls into.
+      * Since GitHub commits are only available weekly, we compute the daily value as the average of the weekly value for the week the day falls into.
       * There were problems collecting Bitcoin reddit post counts before 3/1/18, so we patch the reddit post count prior to 3/1/18 as the *average reddit posts per day since 3/1/18*. Definitely not ideal.
 #### CryptoCompare
 * [coinsnapshot.py](https://github.com/sierra073/aspie/blob/master/get_data/coinsnapshot.py)
@@ -108,6 +108,12 @@ All python scripts to collect the following metrics found in the `get_data/` fol
 * [eth_address_count.py](https://github.com/sierra073/aspie/blob/master/get_data/eth_address_count.py):
   * CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
 ### Sentiment Analysis
+* [get_sentiments.py](https://github.com/sierra073/aspie/blob/master/get_data/get_sentiments.py):
+  * Computes a sentiment score between -1 and 1 (1 being the most positive) leveraging [Haven OnDemand](https://dev.havenondemand.com/apis/analyzesentiment#overview) for (1) and [TextBlob](http://textblob.readthedocs.io/en/dev/index.html) for (2) and (3):
+    * (1) Using the first page of the protocol's subreddit(s), computes the average sentiment score
+    * (2) If any of the keywords provided for the protocol in the input data are found in the top 200 *hot* posts of [r/CryptoCurrency](https://www.reddit.com/r/CryptoCurrency/), returns the average sentiment score
+    * (3) Searches twitter for the top 100 results (statuses containing each keyword for each protocol) and returns the average sentiment score
+    * The final sentiment score is highly weighted towards the twitter score `85%(90% in case (2) is not found)*(3), + 10%*(1) + 5%*(2)`
 
 ## Predictive Model--under development
 
