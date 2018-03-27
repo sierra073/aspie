@@ -56,13 +56,14 @@ bokeh serve individual.py compare.py --port 5100 --num-procs 0 --allow-websocket
 ```
 
 ## Data Collection
-All python scripts to collect the following metrics found in the `get_data/` folder. All data gets populated into PostgreSQL tables.
+All python scripts to collect the following metrics found in the `get_data/` folder. All data gets populated into PostgreSQL tables (except [coin snapshot data](#cryptocompare)). Except for [GitHub stars](#github), [Marketplace](#marketplace) data and [Ethereum address count](#ethereum-address-count) which are pulled from scratch each time, all other data is appended to the tables as it is collected so that we only pull one day's worth of data. 
 ### Social
 #### Reddit posts and subscribers
 * [get_reddit_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_reddit_data.py):
   * If more than one subreddit is provided for a protocol, all metrics are summed over all subreddits every day
   * Posts are scraped directly from the _new_ posts for every subreddit, and subscribers are pulled using the [Reddit API](https://www.reddit.com/dev/api/#GET_r_{subreddit}_about) 
   * Since the Bitcoin reddit is very active and problematic, we track posts per day from [here](https://www.cryptocompare.com/api/data/socialstats/?id=1182)
+  * Tracked starting 2018.
 #### Twitter followers
 * [get_twitter_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_twitter_data.py):
   * Number of followers scraped directly from each protocol's twitter page every day. Tracked starting 2018.
@@ -85,14 +86,27 @@ All python scripts to collect the following metrics found in the `get_data/` fol
   * Questions are counted since January 2017. Questions are aggregated by protocol by searching for those that contain the term(s) specified in our input data in their title OR for those tagged as the term(s). Thus, it's possible for questions to be double counted if the term is contained in the question title AND question tag, but highly unlikely based on the data observed.
 ### Marketplace
 #### CoinMarketCap
-* Tracked since January 2017.
+* [get_marketcap_history.py](https://github.com/sierra073/aspie/blob/master/get_data/get_marketcap_history.py):
+  * Pulls data market capitalization and price data for protocols listed on [CoinMarketCap](https://coinmarketcap.com/), leveraging [this script](https://github.com/jhogan4288/coinmarketcap-history/blob/master/coinmarketcap_usd_history.py). Tracked since January 2017.
 #### Coinbase Index Fund
-* Tracked since January 2015.
+* [get_cbi_data.py](https://github.com/sierra073/aspie/blob/master/get_data/get_cbi_data.py):
+  * Scrapes directly from [here](https://am.coinbase.com/index) every day. Tracked since January 2015.
 ### Aggregated and Other Metrics
 #### Activity Score
+* [kpi.py](https://github.com/sierra073/aspie/blob/master/get_data/kpi.py) and [kpi.sql](https://github.com/sierra073/aspie/blob/master/get_data/kpi.sql):
+  * Aggregates all Social and Development data into a single score between 0 and 100 - computed daily since 2/12/18 when all data was avaiable. **Very much a heuristic.**
+    * Overall explanation: 
+      * Each metric is transformed into a *percentile rank* (among all protocols) for that day. Reddit and Twitter followers are represented as the *change in followers from the previous day*.
+      * The score is an average of 3 components which are themselves averages (and multiplied by 100): (1) Social Score, an average of the reddit post rank, reddit subscriber rank, twitter follower rank and Hacker News rank; (2) Developer Score, an average of the GitHub commit count rank, GitHub star count rank and StackOverflow question count rank; (3) Search Score which is just the [Google Trends search interest metric](#google-search-interest) for the day.
+    * Patching and exceptions: 
+      * Since GitHub commits are only available weekly, we compute the daily value as the average of the weekly value for the week the current day falls into.
+      * There were problems collecting Bitcoin reddit post counts before 3/1/18, so we patch the reddit post count prior to 3/1/18 as the *average reddit posts per day since 3/1/18*. Definitely not ideal.
 #### CryptoCompare
+* [coinsnapshot.py](https://github.com/sierra073/aspie/blob/master/get_data/coinsnapshot.py)
+  * Leverages the CryptoCompare API "[coin snapshot](https://www.cryptocompare.com/api/#-api-data-coinsnapshot-)". Runs live from the **individual** dashboard tab.
 #### Ethereum address count
-* CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
+* [eth_address_count.py](https://github.com/sierra073/aspie/blob/master/get_data/eth_address_count.py):
+  * CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
 ### Sentiment Analysis
 
 ## Predictive Model--under development
@@ -107,6 +121,6 @@ https://min-api.cryptocompare.com/data/all/coinlist
 - Streamline the process for adding new protocols
 - Build navigable website utilizing `flask` instead of just `bokeh`  
 - Continued improvement of visuals, interactivity and layout
-- Finish developing an LTSM (Deep Learning) model to predict daily price appreciation leveraging all of the metrics tracked
+- Finish developing an LTSM (Deep Learning) model to predict daily price appreciation leveraging all of the metrics tracked, and deploy on the website
 
 
