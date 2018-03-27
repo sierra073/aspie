@@ -15,4 +15,7 @@ numpy
 seaborn
 matplotlib
 sklearn
+praw
+tweepy
+textblob
 

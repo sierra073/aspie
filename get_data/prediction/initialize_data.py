@@ -1,8 +1,5 @@
-import json
 import pandas as pd
-import time
 import psycopg2
-from datetime import datetime
 
 # variables
 HOST = '159.89.155.200'
@@ -69,3 +66,5 @@ protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x
 protocols['stackoverflow'] = protocols['stackoverflow'].apply(lambda x: stringToList(x))
 protocols['twitter'] = protocols['twitter'].apply(lambda x: stringToList(x))
 protocols['search'] = protocols['search'].apply(lambda x: stringToList(x))
+protocols['sentiment_keywords'] = protocols['sentiment_keywords'].apply(lambda x: stringToList(x))
+

@@ -84,6 +84,7 @@ protocols['subreddits'] = protocols['subreddits'].apply(lambda x: stringToList(x
 protocols['stackoverflow'] = protocols['stackoverflow'].apply(lambda x: stringToList(x))
 protocols['twitter'] = protocols['twitter'].apply(lambda x: stringToList(x))
 protocols['search'] = protocols['search'].apply(lambda x: stringToList(x))
+protocols['sentiment_keywords'] = protocols['sentiment_keywords'].apply(lambda x: stringToList(x))
 
 #### wrapper function around whatever API calls are used to get a certain metric if we are appending it to current data
 def api_wrapper_append(data,api_func,site,u_srt,u_end,date_col,count_col,sum,allow_multiple_days,tablename):
