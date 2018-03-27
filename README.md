@@ -64,7 +64,13 @@ All python scripts to collect the following metrics found in the `get_data/` fol
 #### Hacker News stories
 ### Development
 #### GitHub
+* Stars are tracked on a daily basis since the repo(s)'s creation date using
+* Total forks
+* Commits are only available at a weekly basis for the last 12 months, hence why the data starts end of January 2017
+  * 'Total commits' thus truly means all commits since January 2017 or since the first repo was created if after January 2017 (except for some protocols tracked after January 2018)
 #### StackOverflow
+* Utilizes StackAPI
+* StackOverflow questions are counted since January 2017. Questions are aggregated by protocol by searching for those that contain the term(s) specified in our input data in their title OR for those tagged as the term(s). Thus, it's possible for questions to be double counted if the term is contained in the question title AND question tag, but highly unlikely based on the data observed.
 ### Marketplace
 #### CoinMarketCap
 #### Coinbase Index Fund
