@@ -3,7 +3,7 @@
 <tr>
 <td>
   A webapp to track and visualize trends in social, development and marketplace activity for a set of crypto protocols. It helps in judging and predicting a protocol's growth and price appreciation.
-  The <b>individual]</b> tab helps zone in on protocols one at a time, and the <b>compare</b> tab helps compare protocols simultaneously.
+  The <b>individual</b> tab helps zone in on protocols one at a time, and the <b>compare</b> tab helps compare protocols simultaneously.
 </td>
 </tr>
 </table>
