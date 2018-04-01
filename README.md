@@ -109,11 +109,11 @@ All python scripts to collect the following metrics found in the `get_data/` fol
   * CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
 ### Sentiment Analysis
 * [get_sentiments.py](https://github.com/sierra073/aspie/blob/master/get_data/get_sentiments.py):
-  * Computes a sentiment score between -1 and 1 (1 being the most positive) leveraging [Haven OnDemand](https://dev.havenondemand.com/apis/analyzesentiment#overview) for (1) and [TextBlob](http://textblob.readthedocs.io/en/dev/index.html) for (2) and (3):
-    * (1) Using the first page of the protocol's subreddit(s), computes the average sentiment score
+  * Computes a sentiment score between -1 and 1 (1 being the most positive) leveraging ~~[Haven OnDemand](https://dev.havenondemand.com/apis/analyzesentiment#overview) for (1) and~~ [TextBlob](http://textblob.readthedocs.io/en/dev/index.html) for (2) and (3):
+    * ~~(1) Using the first page of the protocol's subreddit(s), computes the average sentiment score~~
     * (2) If any of the keywords provided for the protocol in the input data are found in the top 200 *hot* posts of [r/CryptoCurrency](https://www.reddit.com/r/CryptoCurrency/), returns the average sentiment score
     * (3) Searches twitter for the top 100 results (statuses containing each keyword for each protocol) and returns the average sentiment score
-    * The final sentiment score is highly weighted towards the twitter score `85%(90% in case (2) is not found)*(3), + 10%*(1) + 5%*(2)`
+    * The final sentiment score is highly weighted towards the twitter score `90%(100% in case (2) is not found)*(3), + 10%*(2)`
 
 ## Predictive Model--under development
 
