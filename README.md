@@ -113,7 +113,7 @@ All python scripts to collect the following metrics found in the `get_data/` fol
     * ~~(1) Using the first page of the protocol's subreddit(s), computes the average sentiment score~~
     * (2) If any of the keywords provided for the protocol in the input data are found in the top 200 *hot* posts of [r/CryptoCurrency](https://www.reddit.com/r/CryptoCurrency/), returns the average sentiment score
     * (3) Searches twitter for the top 100 results (statuses containing each keyword for each protocol) and returns the average sentiment score
-    * The final sentiment score is highly weighted towards the twitter score `90%(100% in case (2) is not found)*(3), + 10%*(2)`
+    * The final sentiment score is highly weighted towards the twitter score `90%(100% in case (2) is not found)*(3) + 10%*(2)`
 
 ## Predictive Model--under development
 
