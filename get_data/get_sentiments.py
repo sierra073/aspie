@@ -32,6 +32,7 @@ def get_forum_texts():
                 texts.append(comment.body)
             else:
                 pass
+    print("got forum")
     return texts
 
 def get_tweets(keywords):
@@ -90,7 +91,7 @@ def insert_db_today(df,tablename):
     final_query = ','.join(cur.mogrify(query, row.values.tolist()) for index, row in df.iterrows())
     final_query = final_query.replace("'NULL'",'NULL')
     #insert into table
-    cur.execute('insert into ' + tablename + ' values ' + final_query)
+    cur.execute('insert into ' + tablename + '(protocol,date,reddit_forum,twitter,sentiment_avg) values ' + final_query)
     print("data inserted")
 
     cur.close()
@@ -98,21 +99,20 @@ def insert_db_today(df,tablename):
     conn.close()
 
 def main():
-
-    reddit_sentiments_protocol = pd.DataFrame([])
+    #reddit_sentiments_protocol = pd.DataFrame([])
     keyword_sentiments = pd.DataFrame([])
     forum_texts = get_forum_texts()
 
     for index, row in protocols.iterrows():
         print row['protocol']
-        subreddits = row['subreddits']
-        subreddits = [s for s in subreddits if s != 'None']
-        for sub in subreddits:
-            value = get_sentiment_page(sub)
-            reddit_sentiments_single = pd.DataFrame({'protocol': row['protocol'],
-                                                     'date': pd.to_datetime(datetime.now()).date(),
-                                                     'reddit_individual': value}, index=[0])
-            reddit_sentiments_protocol = reddit_sentiments_protocol.append(reddit_sentiments_single)
+        # subreddits = row['subreddits']
+        # subreddits = [s for s in subreddits if s != 'None']
+        # for sub in subreddits:
+        #     value = get_sentiment_page(sub)
+        #     reddit_sentiments_single = pd.DataFrame({'protocol': row['protocol'],
+        #                                              'date': pd.to_datetime(datetime.now()).date(),
+        #                                              'reddit_individual': value}, index=[0])
+        #     reddit_sentiments_protocol = reddit_sentiments_protocol.append(reddit_sentiments_single)
 
         keywords = row['sentiment_keywords']
         tweets = get_tweets(keywords)
@@ -126,13 +126,14 @@ def main():
                                          'twitter': twitter}, index=[0])
         keyword_sentiments = keyword_sentiments.append(keyword_sentiments_protocol)
 
-    reddit_sentiments_indiv = pd.DataFrame(reddit_sentiments_protocol.groupby(['protocol','date']).mean()).round(3).reset_index()
-    keyword_sentiments = keyword_sentiments.reset_index(drop=True)
-    sentiments_final = reddit_sentiments_indiv.merge(keyword_sentiments, how='outer', on = ['protocol','date'])
-    sentiments_final['sentiment_avg'] =np.where(np.logical_and(sentiments_final['reddit_forum'].isnull(), sentiments_final['reddit_individual'].isnull()), 
-                                                sentiments_final['twitter'], np.where(sentiments_final['reddit_forum'].isnull(),
-                                                sentiments_final['reddit_individual']*.1 + sentiments_final['twitter']*.9, 
-                                                sentiments_final['reddit_individual']*.1 + sentiments_final['reddit_forum']*.05 + sentiments_final['twitter']*.85))
+    #reddit_sentiments_indiv = pd.DataFrame(reddit_sentiments_protocol.groupby(['protocol','date']).mean()).round(3).reset_index()
+    sentiments_final = keyword_sentiments.reset_index(drop=True)
+    #sentiments_final = reddit_sentiments_indiv.merge(keyword_sentiments, how='outer', on = ['protocol','date'])
+    sentiments_final['sentiment_avg'] =np.where(sentiments_final['reddit_forum'].isnull(), 
+                                                sentiments_final['twitter'], 
+                                                sentiments_final['reddit_forum']*.1 + sentiments_final['twitter']*.9)
+    sentiments_final = sentiments_final[['protocol','date','reddit_forum','twitter','sentiment_avg']]
+    print("got all sentiments")
     insert_db_today(sentiments_final,'protocols_sentiment')
 
 main()
