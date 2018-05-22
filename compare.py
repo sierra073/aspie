@@ -58,7 +58,7 @@ def get_trend(data,name):
     return trends
 
 def get_data(name):
-    cur.execute('select * from ' + name +';')
+    cur.execute('select * from ' + name +' order by 1,2;')
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
     data = pd.DataFrame(rows, columns=names)
@@ -80,7 +80,7 @@ def get_data(name):
     return data
 
 def get_kpi_hist(score):
-    cur.execute('select protocol, date, ' + score + ' from protocols_kpi_hist;')
+    cur.execute('select protocol, date, ' + score + ' from protocols_kpi_hist order by 1,2;')
     names = [x[0] for x in cur.description]
     rows = cur.fetchall()
     data = pd.DataFrame(rows, columns=names)
@@ -114,7 +114,7 @@ keys = ["l" + str(i) for i in range(0,len(protocols_list))]
 #create figures
 def build_figure(figname,type):
     if type==3:
-        w=970
+        w=1100
     else:
         w=1255
     f=figure(x_axis_type='datetime', plot_width=w,
