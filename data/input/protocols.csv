@@ -17,3 +17,4 @@ Bitcoin Cash,#FF8C00,BCH,BCH,202330,[Bitcoin-ABC/bitcoin-abc],[Bitcoincash],"[bi
 Plasma,#69797E,,,,[None],[None],[None],[EthereumPlasma],[plasma],"[plasma, ethereum plasma]"
 Stellar,#F64C72,XLM,XLM,4614,[stellar/stellar-core],[Stellar],[Stellar],[stellarorg],[stellar],"[stellar, xlm]"
 EOS,#060606,EOS,EOS,166503,[EOSIO/eos],[eos],[eos],[eos_io],[eos],[eos]
+Numeraire,#000080,NMR,NMR,166594,"[numerai/contract, uuazed/numerapi/]",[numerai],"[numerai, numer.ai]",[numerai],"[numerai,numer.ai,numeraire]","[numerai,numeraire]"
