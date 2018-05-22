@@ -109,11 +109,10 @@ All python scripts to collect the following metrics found in the `get_data/` fol
   * CSV pulled directly from [here](https://etherscan.io/chart/address?output=csv') and loaded into Postgres every day.
 ### Sentiment Analysis
 * [get_sentiments.py](https://github.com/sierra073/aspie/blob/master/get_data/get_sentiments.py):
-  * Computes a sentiment score between -1 and 1 (1 being the most positive) leveraging ~~[Haven OnDemand](https://dev.havenondemand.com/apis/analyzesentiment#overview) for (1) and~~ [TextBlob](http://textblob.readthedocs.io/en/dev/index.html) for (2) and (3):
-    * ~~(1) Using the first page of the protocol's subreddit(s), computes the average sentiment score~~
-    * (2) If any of the keywords provided for the protocol in the input data are found in the top 200 *hot* posts of [r/CryptoCurrency](https://www.reddit.com/r/CryptoCurrency/), returns the average sentiment score
-    * (3) Searches twitter for the top 100 results (statuses containing each keyword for each protocol) and returns the average sentiment score
-    * The final sentiment score is highly weighted towards the twitter score `90%(100% in case (2) is not found)*(3) + 10%*(2)`
+  * Computes a sentiment score between -1 and 1 (1 being the most positive) leveraging [TextBlob](http://textblob.readthedocs.io/en/dev/index.html)]:
+    * (1) If any of the keywords provided for the protocol in the input data are found in the top 200 *hot* posts of [r/CryptoCurrency](https://www.reddit.com/r/CryptoCurrency/), returns the average sentiment score
+    * (2) Searches twitter for the top 100 results (statuses containing each keyword for each protocol) and returns the average sentiment score
+    * The final sentiment score is highly weighted towards the twitter score `90%(100% in case (1) is not found)*(2) + 10%*(1)`
 
 ## Predictive Model--under development
 
@@ -124,9 +123,7 @@ All python scripts to collect the following metrics found in the `get_data/` fol
 https://min-api.cryptocompare.com/data/all/coinlist 
 
 ## To-do
-- Streamline the process for adding new protocols
-- Build navigable website utilizing `flask` instead of just `bokeh`  
-- Continued improvement of visuals, interactivity and layout
-- Finish developing an LTSM (Deep Learning) model to predict daily price appreciation leveraging all of the metrics tracked, and deploy on the website
+- Navigable website, with individual polished pages for Urbit and Numerai
+- Predictive models for price appreciation
 
 
