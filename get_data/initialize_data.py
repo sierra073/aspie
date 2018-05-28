@@ -109,7 +109,7 @@ def insert_db_today(df, tablename):
     final_query = ','.join(cur.mogrify(query, row.values.tolist()) for index, row in df.iterrows())
     final_query = final_query.replace("'NULL'", 'NULL')
 
-    if tablename == protocols_sentiment:
+    if tablename == 'protocols_sentiment':
         cols = ' (protocol,date,reddit_forum,twitter,sentiment_avg) values '
     else:
         cols = ' (protocol,date,count) values '
