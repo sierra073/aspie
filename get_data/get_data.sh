@@ -14,5 +14,5 @@ python get_hackernews_data.py &
 python get_sentiments.py &
 wait
 python kpi.py &&
-python get_cbi_data.py &&
+python get_token_txn_hist.py &&
 echo "Done!"
